@@ -1,14 +1,7 @@
-import upwork
 from pprint import pprint
+import upwork
 from upwork.routers import auth
-from upwork.routers.freelancers import profile
-from upwork.routers.hr import jobs
 from upwork.routers.jobs import profile
-from upwork.routers.hr.clients import offers
-from upwork.routers.jobs import search
-from upwork.routers.activities import team
-from upwork.routers.reports import time
-from urllib.parse import quote
 
 try:
     from configparser import ConfigParser
