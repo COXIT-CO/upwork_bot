@@ -29,7 +29,7 @@ def initialize_variables():
             "Please check if you run script with parameters . Script is terminated"
         )
 
-    configuration.add_section('UPWORK')
+    configuration.add_section("UPWORK")
     configuration["UPWORK"]["client_id"] = namespace.client_id
     configuration["UPWORK"]["client_secret"] = namespace.client_secret
     configuration["UPWORK"]["access_token"] = namespace.access_token

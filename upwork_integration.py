@@ -19,14 +19,14 @@ def get_desktop_client():
         "expires_at": configuration.getfloat("UPWORK", "expires_at"),
         "expires_in": configuration.getint("UPWORK", "expires_in"),
         "refresh_token": configuration.get("UPWORK", "refresh_token"),
-        "token_type": configuration.get("UPWORK", "token_type")
+        "token_type": configuration.get("UPWORK", "token_type"),
     }
 
     config = upwork.Config(
         {
             "client_id": configuration.get("UPWORK", "client_id"),
             "client_secret": configuration.get("UPWORK", "client_secret"),
-            "token": token
+            "token": token,
         }
     )
 
