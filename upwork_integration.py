@@ -2,11 +2,8 @@ from pprint import pprint
 import upwork
 from upwork.routers import auth
 from upwork.routers.jobs import profile
+from configparser import ConfigParser
 
-try:
-    from configparser import ConfigParser
-except Exception as e:
-    raise e
 
 configuration = ConfigParser()
 configuration.read("settings.ini")
