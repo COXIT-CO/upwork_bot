@@ -8,13 +8,13 @@ from os import path
 def create_parser():
     """Creates parameters passed from console"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-cid', '--client_id')
-    parser.add_argument('-csc', '--client_secret')
-    parser.add_argument('-at', '--access_token')
-    parser.add_argument('-eat', '--expires_at')
-    parser.add_argument('-ein', '--expires_in')
-    parser.add_argument('-rt', '--refresh_token')
-    parser.add_argument('-tt', '--token_type')
+    parser.add_argument("-cid", "--client_id")
+    parser.add_argument("-csc", "--client_secret")
+    parser.add_argument("-at", "--access_token")
+    parser.add_argument("-eat", "--expires_at")
+    parser.add_argument("-ein", "--expires_in")
+    parser.add_argument("-rt", "--refresh_token")
+    parser.add_argument("-tt", "--token_type")
 
     return parser
 
@@ -26,7 +26,8 @@ def initialize_variables():
     namespace = parser.parse_args(sys.argv[1:])
     if len(sys.argv) == 1:
         sys.exit(
-            "Please check if you run script with parameters . Script is terminated")
+            "Please check if you run script with parameters . Script is terminated"
+        )
 
     configuration.add_section('UPWORK')
     configuration["UPWORK"]["client_id"] = namespace.client_id
@@ -37,12 +38,12 @@ def initialize_variables():
     configuration["UPWORK"]["refresh_token"] = namespace.refresh_token
     configuration["UPWORK"]["token_type"] = namespace.token_type
 
-    with open('settings.ini', 'w') as configfile:  # save
+    with open("settings.ini", "w") as configfile:  # save
         configuration.write(configfile)
 
 
-if __name__ == '__main__':
-    if path.isfile('settings.ini'):
+if __name__ == "__main__":
+    if path.isfile("settings.ini"):
         key = input("Do you really wanna change your settings?(y/n) ")
         if key == "y":
             initialize_variables()

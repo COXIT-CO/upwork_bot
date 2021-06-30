@@ -8,21 +8,27 @@ try:
 except Exception as e:
     raise e
 
-configur = ConfigParser()
-configur.read('settings.ini')
+configuration = ConfigParser()
+configuration.read("settings.ini")
 
 
 def get_desktop_client():
 
-    token = {"access_token": configur.get("UPWORK", "access_token"),
-             "expires_at": configur.getfloat("UPWORK", "expires_at"),
-             "expires_in": configur.getint("UPWORK", "expires_in"),
-             "refresh_token": configur.get("UPWORK", "refresh_token"),
-             "token_type": configur.get("UPWORK", "token_type")}
+    token = {
+        "access_token": configuration.get("UPWORK", "access_token"),
+        "expires_at": configuration.getfloat("UPWORK", "expires_at"),
+        "expires_in": configuration.getint("UPWORK", "expires_in"),
+        "refresh_token": configuration.get("UPWORK", "refresh_token"),
+        "token_type": configuration.get("UPWORK", "token_type")
+    }
 
-    config = upwork.Config({"client_id": configur.get("UPWORK", "client_id"),
-                            "client_secret": configur.get("UPWORK", "client_secret"),
-                            "token": token})
+    config = upwork.Config(
+        {
+            "client_id": configuration.get("UPWORK", "client_id"),
+            "client_secret": configuration.get("UPWORK", "client_secret"),
+            "token": token
+        }
+    )
 
     client = upwork.Client(config)
 
@@ -47,7 +53,7 @@ def get_desktop_client():
     return client
 
 
-def get_job(data):
+def get_job(data: str) -> list:
 
     client_jobs = []
     response_dict = profile.Api(client).get_specific(data)
