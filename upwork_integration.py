@@ -52,6 +52,7 @@ def get_desktop_client():
 
 def get_job(data: str) -> list:
 
+    client = get_desktop_client()
     client_jobs = []
     response_dict = profile.Api(client).get_specific(data)
     list_of_jobs = response_dict["profile"]["op_other_jobs"]["op_other_job"]
@@ -59,18 +60,3 @@ def get_job(data: str) -> list:
         client_jobs.append(item["op_ciphertext"])
 
     return client_jobs
-
-
-if __name__ == "__main__":
-    client = get_desktop_client()
-    print("Input job link: ")
-    url = input().split("~")
-    result = "~" + url[1]
-
-    try:
-        print("Information")
-        pprint(auth.Api(client).get_user_info())
-        pprint(get_job(result))
-    except Exception as e:
-        print("Exception at %s %s" % (client.last_method, client.last_url))
-        raise e
