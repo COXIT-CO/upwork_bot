@@ -1,5 +1,5 @@
 import ssl
-from flask import Flask
+from flask import Flask, request, Response
 from slack_sdk import WebClient
 from slackeventsapi import SlackEventAdapter
 
@@ -17,10 +17,10 @@ DB.__init__(app)
 ma.init_app(app)
 
 
-client = WebClient(token=configuration.get["SLACK"]["slack_bot_token"])
-SLACK_WEBHOOK_URL = configuration.get["SLACK"]['slack_signing_secret']
+client = WebClient(token=configuration.get("SLACK", "slack_bot_token"))
+SLACK_WEBHOOK_URL = configuration.get("SLACK", "slack_webhook_url")
 slack_event_adapter = SlackEventAdapter(
-    configuration.get["SLACK"]["slack_webhook_url"], '/slack/event', app)
+    configuration.get("SLACK", "slack_signing_secret"), "/slack/event", app)
 
 BOT_ID = client.api_call("auth.test")["user_id"]
 
@@ -61,9 +61,6 @@ def message(payload):
     text = event.get("text")
 
     if BOT_ID != user_id:
-        inbound_message = f"{user_id} in {channel_id} says: {text}"
-        print(inbound_message)
-
         list_of_data = text.split(",")
         list_of_data[1] = list_of_data[1][:-1].split("<https://www.upwork.com/jobs/")
         data_to_db = [list_of_data[0], list_of_data[1][1]]
@@ -71,10 +68,44 @@ def message(payload):
         client.chat_postMessage(channel=channel_id, text=f"{create_new_user(data_to_db)}")
         result_list = send_upwork_request(list_of_data[1][1])
         push_all_urls_to_db(result_list, list_of_data[1][1])
-        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_user_urls('Kate')}")
 
-        # client.chat_postMessage(channel=channel_id, text=f'{restrict_all_users()}')
-        # client.chat_postMessage(channel=channel_id, text=f"{cascade_delete_user('Kate')}")
+
+@app.route("/all-clients", methods=["POST"])
+def show_clients():
+    data = request.form
+    channel_id = data.get("channel_id")
+    user_id = data.get("user_id")
+
+    if BOT_ID != user_id:
+        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_users()}")
+
+    return Response(), 200
+
+
+@app.route("/client-urls", methods=["POST"])
+def show_client_urls():
+    data = request.form
+    channel_id = data.get("channel_id")
+    user_id = data.get("user_id")
+    text = data.get("text")
+
+    if BOT_ID != user_id:
+        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_user_urls(f'{text}')}")
+
+    return Response(), 200
+
+
+@app.route("/delete-client", methods=["POST"])
+def delete_client():
+    data = request.form
+    channel_id = data.get("channel_id")
+    user_id = data.get("user_id")
+    text = data.get("text")
+
+    if BOT_ID != user_id:
+        client.chat_postMessage(channel=channel_id, text=f"{cascade_delete_user(f'{text}')}")
+
+    return Response(), 200
 
 
 if __name__ == "__main__":

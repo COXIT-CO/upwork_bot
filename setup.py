@@ -42,9 +42,9 @@ def initialize_variables():
     configuration["UPWORK"]["token_type"] = namespace.token_type
 
     configuration.add_section("SLACK")
-    configuration["SLACK"]["slack_bot_token"] = namespace.client_id
-    configuration["SLACK"]["slack_signing_secret"] = namespace.client_secret
-    configuration["SLACK"]["slack_webhook_url"] = namespace.access_token
+    configuration["SLACK"]["slack_bot_token"] = namespace.slack_bot_token
+    configuration["SLACK"]["slack_signing_secret"] = namespace.slack_signing_secret
+    configuration["SLACK"]["slack_webhook_url"] = namespace.slack_webhook_url
 
     with open("settings.ini", "w") as configfile:  # save
         configuration.write(configfile)

@@ -41,12 +41,13 @@ class AllDataController:
     def create(self, request_data=None, url=None):
         user = RawData.query.filter_by(url=url).first()
         if user is not None:
-            for data in request_data:
-                new_url = AllData(client=user, clients_url=data)
-                DB.session.add(new_url)
-                DB.session.commit()
-        else:
-            return "Error in all_data_controller"
+            if request_data is not None:
+                for data in request_data:
+                    new_url = AllData(client=user, clients_url=data)
+                    DB.session.add(new_url)
+                    DB.session.commit()
+            else:
+                return "This client has no open jobs now."
 
     def read_user_urls(self, client_name=None):
         user = RawData.query.filter_by(name=client_name).first()

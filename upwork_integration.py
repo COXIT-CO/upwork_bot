@@ -55,8 +55,12 @@ def get_job(data: str) -> list:
     client = get_desktop_client()
     client_jobs = []
     response_dict = profile.Api(client).get_specific(data)
-    list_of_jobs = response_dict["profile"]["op_other_jobs"]["op_other_job"]
-    for item in list_of_jobs:
-        client_jobs.append(item["op_ciphertext"])
-
-    return client_jobs
+    list_of_jobs = response_dict["profile"]["op_other_jobs"]
+    if len(list_of_jobs) == 0:
+        client_jobs = None
+        return client_jobs
+    else:
+        list_of_jobs = response_dict["profile"]["op_other_jobs"]["op_other_job"]
+        for item in list_of_jobs:
+            client_jobs.append(item["op_ciphertext"])
+        return client_jobs
