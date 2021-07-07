@@ -27,14 +27,16 @@ class RawDataController:
         user = RawData.query.filter_by(name=client_name).first()
         if user is None:
             return "No such user!"
-        user_with_url = AllData.query.filter_by(client_id=user.id).all()
-        if len(user_with_url) != 0:
-            for data in user_with_url:
-                DB.session.delete(AllData.query.filter_by(client_id=data.id).first())
-                DB.session.commit()
-        DB.session.delete(user)
-        DB.session.commit()
-        return "Deleted successfully!"
+        else:
+            list_of_urls = AllData.query.filter_by(client_id=user.id).all()
+            if len(list_of_urls) != 0:
+                for data in list_of_urls:
+                    delete_row = AllData.query.filter_by(id=data.id).first()
+                    DB.session.delete(delete_row)
+                    DB.session.commit()
+            DB.session.delete(user)
+            DB.session.commit()
+            return "Deleted successfully!"
 
 
 class AllDataController:

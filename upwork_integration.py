@@ -4,13 +4,11 @@ from upwork.routers import auth
 from upwork.routers.jobs import profile
 from configparser import ConfigParser
 
-
 configuration = ConfigParser()
 configuration.read("settings.ini")
 
 
 def get_desktop_client():
-
     token = {
         "access_token": configuration.get("UPWORK", "access_token"),
         "expires_at": configuration.getfloat("UPWORK", "expires_at"),
@@ -26,7 +24,6 @@ def get_desktop_client():
             "token": token,
         }
     )
-
     client = upwork.Client(config)
 
     try:
@@ -51,7 +48,6 @@ def get_desktop_client():
 
 
 def get_job(data: str) -> list:
-
     client = get_desktop_client()
     client_jobs = []
     response_dict = profile.Api(client).get_specific(data)
@@ -61,6 +57,10 @@ def get_job(data: str) -> list:
         return client_jobs
     else:
         list_of_jobs = response_dict["profile"]["op_other_jobs"]["op_other_job"]
-        for item in list_of_jobs:
-            client_jobs.append(item["op_ciphertext"])
+        if isinstance(list_of_jobs, list) and len(list_of_jobs) > 1:
+            for item in list_of_jobs:
+                client_jobs.append(item["op_ciphertext"])
+        else:  # 1 dict
+            for item in list_of_jobs.values():
+                client_jobs.append(item)
         return client_jobs

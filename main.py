@@ -1,4 +1,7 @@
 import ssl
+import threading
+import time
+
 from flask import Flask, request, Response
 from slack_sdk import WebClient
 from slackeventsapi import SlackEventAdapter
@@ -15,7 +18,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 DB.__init__(app)
 ma.init_app(app)
-
 
 client = WebClient(token=configuration.get("SLACK", "slack_bot_token"))
 SLACK_WEBHOOK_URL = configuration.get("SLACK", "slack_webhook_url")
@@ -108,5 +110,31 @@ def delete_client():
     return Response(), 200
 
 
+def notiffication(func, sec=0, minutes=0, hours=0):
+    while True:
+        sleep_time = sec + (minutes * 60) + (hours * 3600)
+        time.sleep(sleep_time)
+        func()
+
+
+def create_tread(func):
+    enable_notification_thread = threading.Thread(
+        target=notiffication, kwargs=({"func": func, "minutes": 1}))
+    enable_notification_thread.daemon = True
+    enable_notification_thread.start()
+
+
+def send_upw_time_request():
+    raw_dict = restrict_all_users()
+    for link in raw_dict.values():
+        print(link)
+        url = link.split("~")
+        raw_job_id = "~" + url[1]
+        send_upwork_request(raw_job_id)
+        time.sleep(100)
+
+
 if __name__ == "__main__":
+    send_upw_time_request()
+    create_tread(send_upw_time_request)
     app.run(host="127.0.0.1", port='8000', debug=True)
