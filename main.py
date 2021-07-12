@@ -189,7 +189,7 @@ def send_upw_time_request():
         if len(check_data(raw_job_id)) != 0:
             for new_url in check_data(raw_job_id):
                 client.chat_postMessage(
-                    channel='#upwork_bot', text=f"{key}, {URL + new_url}"
+                    channel="#upwork_bot", text=f"{key}, {URL + new_url}"
                 )
             push_all_urls_to_db(check_data(raw_job_id), raw_job_id)
         time.sleep(100)
