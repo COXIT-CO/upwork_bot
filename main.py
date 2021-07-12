@@ -89,20 +89,22 @@ def cascade_delete_user(request_data):
 def message(payload):
     """Event, reacting on message in chat"""
     event = payload.get("event", {})
-    message.channel_id = event.get("channel")
-    message.user_id = event.get("user")
+    channel_id = event.get("channel")
+    user_id = event.get("user")
     text = event.get("text")
     try:
         if BOT_ID != user_id:
             list_of_data = text.split(",")
-            list_of_data[1] = list_of_data[1][:-1].split("<https://www.upwork.com/jobs/")
+            list_of_data[1] = list_of_data[1][:-1].split(
+                "<https://www.upwork.com/jobs/"
+            )
             data_to_db = [list_of_data[0], list_of_data[1][1]]
             client.chat_postMessage(
                 channel=channel_id, text=f"{create_new_user(data_to_db)}"
             )
             result_list = send_upwork_request(list_of_data[1][1])
             push_all_urls_to_db(result_list, list_of_data[1][1])
-    except IndexError or AttributeError:
+    except (IndexError, AttributeError):
         pass
 
 
@@ -114,9 +116,7 @@ def show_clients():
     user_id = data.get("user_id")
 
     if BOT_ID != user_id:
-        client.chat_postMessage(
-            channel=channel_id, text=f"{restrict_all_users()}"
-        )
+        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_users()}")
 
     return Response(), 200
 
@@ -162,7 +162,8 @@ def notiffication(func, sec=0, minutes=0, hours=0):
 
 def create_tread(func):
     enable_notification_thread = threading.Thread(
-        target=notiffication, kwargs=({"func": func, "minutes": 10}))
+        target=notiffication, kwargs=({"func": func, "minutes": 10})
+    )
     enable_notification_thread.daemon = True
     enable_notification_thread.start()
 
@@ -188,10 +189,11 @@ def send_upw_time_request():
         if len(check_data(raw_job_id)) != 0:
             for new_url in check_data(raw_job_id):
                 client.chat_postMessage(
-                    channel='#upwork_bot', text=f"{key}, { URL+ new_url}"
+                    channel='#upwork_bot', text=f"{key}, {URL + new_url}"
                 )
             push_all_urls_to_db(check_data(raw_job_id), raw_job_id)
         time.sleep(100)
+
 
 if __name__ == "__main__":
 
