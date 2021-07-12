@@ -7,7 +7,7 @@ from slack_sdk import WebClient
 from slackeventsapi import SlackEventAdapter
 
 from models import DB
-from controllers import ClientController, JobController
+from controllers import ClientController, JobController, URL
 from upwork_integration import configuration, get_desktop_client, get_job
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -21,7 +21,8 @@ DB.__init__(app)
 client = WebClient(token=configuration.get("SLACK", "slack_bot_token"))
 SLACK_WEBHOOK_URL = configuration.get("SLACK", "slack_webhook_url")
 slack_event_adapter = SlackEventAdapter(
-    configuration.get("SLACK", "slack_signing_secret"), "/slack/event", app)
+    configuration.get("SLACK", "slack_signing_secret"), "/slack/event", app
+)
 
 BOT_ID = client.api_call("auth.test")["user_id"]
 
@@ -88,19 +89,20 @@ def cascade_delete_user(request_data):
 def message(payload):
     """Event, reacting on message in chat"""
     event = payload.get("event", {})
-    channel_id = event.get("channel")
-    user_id = event.get("user")
+    message.channel_id = event.get("channel")
+    message.user_id = event.get("user")
     text = event.get("text")
     try:
         if BOT_ID != user_id:
             list_of_data = text.split(",")
             list_of_data[1] = list_of_data[1][:-1].split("<https://www.upwork.com/jobs/")
             data_to_db = [list_of_data[0], list_of_data[1][1]]
-
-            client.chat_postMessage(channel=channel_id, text=f"{create_new_user(data_to_db)}")
+            client.chat_postMessage(
+                channel=channel_id, text=f"{create_new_user(data_to_db)}"
+            )
             result_list = send_upwork_request(list_of_data[1][1])
             push_all_urls_to_db(result_list, list_of_data[1][1])
-    except IndexError:
+    except IndexError or AttributeError:
         pass
 
 
@@ -112,7 +114,9 @@ def show_clients():
     user_id = data.get("user_id")
 
     if BOT_ID != user_id:
-        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_users()}")
+        client.chat_postMessage(
+            channel=channel_id, text=f"{restrict_all_users()}"
+        )
 
     return Response(), 200
 
@@ -126,7 +130,9 @@ def show_client_urls():
     text = data.get("text")
 
     if BOT_ID != user_id:
-        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_user_urls(f'{text}')}")
+        client.chat_postMessage(
+            channel=channel_id, text=f"{restrict_all_user_urls(f'{text}')}"
+        )
 
     return Response(), 200
 
@@ -140,7 +146,9 @@ def delete_client():
     text = data.get("text")
 
     if BOT_ID != user_id:
-        client.chat_postMessage(channel=channel_id, text=f"{cascade_delete_user(f'{text}')}")
+        client.chat_postMessage(
+            channel=channel_id, text=f"{cascade_delete_user(f'{text}')}"
+        )
 
     return Response(), 200
 
@@ -159,28 +167,34 @@ def create_tread(func):
     enable_notification_thread.start()
 
 
-def check_data(id):
+def check_data(data):
     """Check data from upwork request and database
     param: job id
     return: set of new jobs
     """
-    urls_from_upwork = set(send_upwork_request(id))
+    urls_from_upwork = set(send_upwork_request(data))
     urls_from_db = restrict_jobs_urls()
     return urls_from_upwork.difference(urls_from_db)
 
 
 def send_upw_time_request():
+    """Send request to Upwork and post new urls in chat"""
     raw_dict = restrict_all_users()
     for key in raw_dict.keys():
         link = raw_dict[key]
         url = link.split("~")
         raw_job_id = "~" + url[1]
+        print(link, key)
         if len(check_data(raw_job_id)) != 0:
+            for new_url in check_data(raw_job_id):
+                client.chat_postMessage(
+                    channel='#upwork_bot', text=f"{key}, { URL+ new_url}"
+                )
             push_all_urls_to_db(check_data(raw_job_id), raw_job_id)
-        time.sleep(10)
+        time.sleep(100)
 
 if __name__ == "__main__":
 
     send_upw_time_request()
     create_tread(send_upw_time_request)
-    app.run(host="127.0.0.1", port='8000')
+    app.run(host="127.0.0.1", port="8000")
