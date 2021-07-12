@@ -1,14 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_marshmallow import Marshmallow
-
 
 DB = SQLAlchemy()
-ma = Marshmallow()
 
 
-class RawData(DB.Model):
+class Client(DB.Model):
 
-    __tablename__ = "raw_data"
+    __tablename__ = "clients"
 
     id = DB.Column(DB.Integer, primary_key=True)
     name = DB.Column(DB.String(100), unique=True)
@@ -20,14 +17,14 @@ class RawData(DB.Model):
         self.url = url
 
 
-class AllData(DB.Model):
+class Job(DB.Model):
 
-    __tablename__ = "all_data"
+    __tablename__ = "jobs"
 
     id = DB.Column(DB.Integer, primary_key=True)
-    client_id = DB.Column(DB.Integer, DB.ForeignKey("raw_data.id"))
+    client_id = DB.Column(DB.Integer, DB.ForeignKey("clients.id"))
     client = DB.relationship(
-        "RawData", backref="owner", cascade="delete, merge, save-update"
+        "Client", backref="owner", cascade="delete, merge, save-update"
     )
     clients_url = DB.Column(DB.String(200), unique=True)
 
