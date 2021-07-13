@@ -4,7 +4,8 @@ URL = "https://www.upwork.com/jobs/"
 
 
 class ClientController:
-    def create(self, request_data=None):
+    @classmethod
+    def create(cls, request_data=None):
         name = request_data[0]
         url = request_data[1]
         user = Client.query.filter_by(name=name).first()
@@ -16,14 +17,16 @@ class ClientController:
         DB.session.commit()
         return "Successfully created!"
 
-    def read(self):
+    @classmethod
+    def read(cls):
         users = Client.query.all()
         result_dict = {}
         for user in users:
             result_dict[user.name] = URL + user.url
         return result_dict
 
-    def delete(self, client_name=None):
+    @classmethod
+    def delete(cls, client_name=None):
         user = Client.query.filter_by(name=client_name).first()
         if user is None:
             return "No such user!"
@@ -40,7 +43,8 @@ class ClientController:
 
 
 class JobController:
-    def create(self, request_data=None, url=None):
+    @classmethod
+    def create(cls, request_data=None, url=None):
         user = Client.query.filter_by(url=url).first()
         if user is not None:
             if request_data is not None:
@@ -53,7 +57,8 @@ class JobController:
                         DB.session.commit()
             return "This client has no open jobs now."
 
-    def read_user_urls(self, client_name=None):
+    @classmethod
+    def read_user_urls(cls, client_name=None):
         user = Client.query.filter_by(name=client_name).first()
         urls_by_user = set()
         if user is None:
@@ -64,7 +69,8 @@ class JobController:
             urls_by_user.add(URL + url.clients_url)
         return urls_by_user
 
-    def read_jobs_data(self):
+    @classmethod
+    def read_jobs_data(cls):
         list_all_urls = Job.query.all()
         set_all_urls = set()
         for url in list_all_urls:

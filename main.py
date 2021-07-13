@@ -31,8 +31,7 @@ def create_new_user(request_data):
     """Create new user in Client table
     param: request_data(name, url)
     """
-    new_user = ClientController()
-    return new_user.create(request_data)
+    return ClientController.create(request_data)
 
 
 def send_upwork_request(request_data):
@@ -51,8 +50,7 @@ def push_all_urls_to_db(request_data, url):
     """Push all data from upwork request to Jobs table
     param: request_data(list of urls) and url(id of job)
     """
-    new_urls = JobController()
-    return new_urls.create(request_data, url)
+    return JobController.create(request_data, url)
 
 
 def restrict_all_user_urls(request_data):
@@ -60,29 +58,28 @@ def restrict_all_user_urls(request_data):
     param: user name
     return: set of all user urls
     """
-    all_urls = JobController()
-    return all_urls.read_user_urls(request_data)
+    return JobController.read_user_urls(request_data)
 
 
 def restrict_all_users():
     """Show all users from Clients table
     return: dict with format { name: url }
     """
-    return ClientController().read()
+    return ClientController.read()
 
 
 def restrict_jobs_urls():
     """Show all urls from Jobs table
     return: set of job ids
     """
-    return JobController().read_jobs_data()
+    return JobController.read_jobs_data()
 
 
 def cascade_delete_user(request_data):
     """Delete user from database
     param: name
     """
-    return ClientController().delete(request_data)
+    return ClientController.delete(request_data)
 
 
 @slack_event_adapter.on("message")
