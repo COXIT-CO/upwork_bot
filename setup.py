@@ -15,6 +15,9 @@ def create_parser():
     parser.add_argument("-ein", "--expires_in")
     parser.add_argument("-rt", "--refresh_token")
     parser.add_argument("-tt", "--token_type")
+    parser.add_argument("-sbt", "--slack_bot_token")
+    parser.add_argument("-sss", "--slack_signing_secret")
+    parser.add_argument("-swu", "--slack_webhook_url")
 
     return parser
 
@@ -37,6 +40,11 @@ def initialize_variables():
     configuration["UPWORK"]["expires_in"] = namespace.expires_in
     configuration["UPWORK"]["refresh_token"] = namespace.refresh_token
     configuration["UPWORK"]["token_type"] = namespace.token_type
+
+    configuration.add_section("SLACK")
+    configuration["SLACK"]["slack_bot_token"] = namespace.slack_bot_token
+    configuration["SLACK"]["slack_signing_secret"] = namespace.slack_signing_secret
+    configuration["SLACK"]["slack_webhook_url"] = namespace.slack_webhook_url
 
     with open("settings.ini", "w") as configfile:  # save
         configuration.write(configfile)
