@@ -8,7 +8,7 @@ from slackeventsapi import SlackEventAdapter
 
 from models import DB
 from controllers import ClientController, JobController, URL
-from upwork_integration import configuration, get_desktop_client, get_job
+from upwork_integration import configuration, get_job
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
@@ -56,7 +56,7 @@ def push_all_urls_to_db(request_data, url):
 def restrict_all_user_urls(request_data):
     """Show all urls from both table by certain user
     param: user name
-    return: set of all user urls
+    return: set of all user urls from Client and Job tables
     """
     return JobController.read_user_urls(request_data)
 
@@ -68,11 +68,12 @@ def restrict_all_users():
     return ClientController.read()
 
 
-def restrict_jobs_urls():
-    """Show all urls from Jobs table
-    return: set of job ids
+def restrict_jobs_by_client(request_data):
+    """Show all urls from both table by certain user
+    param: user name
+    return: set of all user urls from Job table
     """
-    return JobController.read_jobs_data()
+    return JobController.read_urls_by_user(request_data)
 
 
 def cascade_delete_user(request_data):
@@ -80,6 +81,20 @@ def cascade_delete_user(request_data):
     param: name
     """
     return ClientController.delete(request_data)
+
+
+def delete_unactual(request_data):
+    """Delete not actual urls from database
+    param: url id
+    """
+    return JobController.delete_not_actual(request_data)
+
+
+def add_new_actual_urls(client_name, request_data):
+    """Add new actual urls from upwork request
+    param: client name, new url
+    """
+    return JobController.add_new_actual(client_name, request_data)
 
 
 @slack_event_adapter.on("message")
@@ -113,7 +128,9 @@ def show_clients():
     user_id = data.get("user_id")
 
     if BOT_ID != user_id:
-        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_users()}")
+        client.chat_postMessage(
+            channel=channel_id,
+            text=f"{restrict_all_users()}")
 
     return Response(), 200
 
@@ -159,20 +176,26 @@ def notiffication(func, sec=0, minutes=0, hours=0):
 
 def create_tread(func):
     enable_notification_thread = threading.Thread(
-        target=notiffication, kwargs=({"func": func, "minutes": 10})
+        target=notiffication, kwargs=({"func": func, "minutes": 1})
     )
     enable_notification_thread.daemon = True
     enable_notification_thread.start()
 
 
-def check_data(data):
+def check_data(data, client_name):
     """Check data from upwork request and database
     param: job id
     return: set of new jobs
     """
-    urls_from_upwork = set(send_upwork_request(data))
-    urls_from_db = restrict_jobs_urls()
-    return urls_from_upwork.difference(urls_from_db)
+    actual_urls_from_upwork = set(send_upwork_request(data))
+    urls_from_db_by_client = restrict_jobs_by_client(client_name)
+    # not_actual - exist in db but don't actual yet
+    not_actual = urls_from_db_by_client - actual_urls_from_upwork
+    delete_unactual(not_actual)
+    # new_actual - new urls from upwork, which don't in db
+    new_actual = actual_urls_from_upwork.difference(urls_from_db_by_client)
+
+    return new_actual
 
 
 def send_upw_time_request():
@@ -183,13 +206,14 @@ def send_upw_time_request():
         url = link.split("~")
         raw_job_id = "~" + url[1]
         print(link, key)
-        if len(check_data(raw_job_id)) != 0:
-            for new_url in check_data(raw_job_id):
-                client.chat_postMessage(
-                    channel="#upwork_bot", text=f"{key}, {URL + new_url}"
-                )
-            push_all_urls_to_db(check_data(raw_job_id), raw_job_id)
-        time.sleep(100)
+        new_uncommited_urls = check_data(raw_job_id, key)
+        if len(new_uncommited_urls) != 0:
+            for new_url in new_uncommited_urls:
+                if add_new_actual_urls(key, new_url) == 200:
+                    client.chat_postMessage(
+                        channel="#upwork_bot",
+                        text=f"NEW: {key} -> {URL + new_url}")
+        time.sleep(10)
 
 
 if __name__ == "__main__":
