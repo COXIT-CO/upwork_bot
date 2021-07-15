@@ -128,9 +128,7 @@ def show_clients():
     user_id = data.get("user_id")
 
     if BOT_ID != user_id:
-        client.chat_postMessage(
-            channel=channel_id,
-            text=f"{restrict_all_users()}")
+        client.chat_postMessage(channel=channel_id, text=f"{restrict_all_users()}")
 
     return Response(), 200
 
@@ -210,8 +208,8 @@ def send_upw_time_request():
             for new_url in new_uncommited_urls:
                 if add_new_actual_urls(key, new_url) == 200:
                     client.chat_postMessage(
-                        channel="#upwork_bot",
-                        text=f"NEW: {key} -> {URL + new_url}")
+                        channel="#upwork_bot", text=f"NEW: {key} -> {URL + new_url}"
+                    )
         time.sleep(10)
 
 
