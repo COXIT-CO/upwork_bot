@@ -53,6 +53,7 @@ class JobController:
                         new_url = Job(owner=user, clients_url=data)
                         DB.session.add(new_url)
                         DB.session.commit()
+                        return "Successfully saved."
                     else:
                         return "Exists in database."
             return "This client has no open jobs now."
@@ -84,7 +85,6 @@ class JobController:
     def delete_not_actual(cls, request_data=None):
         for url in request_data:
             delete_row = Job.query.filter_by(clients_url=url).first()
-            print(delete_row)
             DB.session.delete(delete_row)
             DB.session.commit()
         return "Deleted successfully!"

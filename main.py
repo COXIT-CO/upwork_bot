@@ -85,7 +85,7 @@ def cascade_delete_user(request_data):
 
 def delete_unactual(request_data):
     """Delete not actual urls from database
-    param: url id
+    param: set of urls
     """
     return JobController.delete_not_actual(request_data)
 
@@ -176,7 +176,7 @@ def notiffication(func, sec=0, minutes=0, hours=0):
 
 def create_tread(func):
     enable_notification_thread = threading.Thread(
-        target=notiffication, kwargs=({"func": func, "minutes": 1})
+        target=notiffication, kwargs=({"func": func, "minutes": 60})
     )
     enable_notification_thread.daemon = True
     enable_notification_thread.start()
@@ -205,7 +205,6 @@ def send_upw_time_request():
         link = raw_dict[key]
         url = link.split("~")
         raw_job_id = "~" + url[1]
-        print(link, key)
         new_uncommited_urls = check_data(raw_job_id, key)
         if len(new_uncommited_urls) != 0:
             for new_url in new_uncommited_urls:

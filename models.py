@@ -15,6 +15,10 @@ class Client(DB.Model):
     )
     # one to many (name -> urls)
 
+    def save(self):
+        DB.session.add(self)
+        DB.session.commit()
+
 
 class Job(DB.Model):
 
@@ -23,3 +27,7 @@ class Job(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     client_id = DB.Column(DB.Integer, DB.ForeignKey("client.id"))
     clients_url = DB.Column(DB.String(200))
+
+    def save(self):
+        DB.session.add(self)
+        DB.session.commit()
