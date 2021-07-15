@@ -43,15 +43,15 @@ class TestClient(unittest.TestCase):
         user.save()
         data = ["Kate", "~012e124456e16572e7"]
         assert (
-                ClientController.create(data)
-                == "User with this name or url is already exist!"
+            ClientController.create(data)
+            == "User with this name or url is already exist!"
         )
 
     def test_read_client_data_200(self):
         expected = {
             "Kate": "https://www.upwork.com/jobs/~012e124456e16572e7",
             "Vova": "https://www.upwork.com/jobs/~01d924c5f6e5aa0918",
-            "Ira": "https://www.upwork.com/jobs/~016ae5b7934dbca5e8"
+            "Ira": "https://www.upwork.com/jobs/~016ae5b7934dbca5e8",
         }
         data_to_client()
         assert ClientController.read() == expected
@@ -89,7 +89,7 @@ class TestClient(unittest.TestCase):
         expected = {
             "https://www.upwork.com/jobs/~01d924c5f6e5aa0918",
             "https://www.upwork.com/jobs/~012e124456e165780",
-            "https://www.upwork.com/jobs/~012e124456e165770"
+            "https://www.upwork.com/jobs/~012e124456e165770",
         }
         assert JobController.read_user_urls(data) == expected
 
@@ -126,5 +126,5 @@ class TestClient(unittest.TestCase):
         assert JobController.add_new_actual(name, data) == "This url already exists!"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
