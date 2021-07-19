@@ -48,13 +48,14 @@ class JobController:
         user = Client.query.filter_by(url=url).first()
         if user is not None:
             if request_data is not None:
-                print("jobs from upwork", request_data)
                 for data in request_data:
-                    exist = Job.query.filter_by(clients_url=data).first()
-                    if exist is None:
-                        new_url = Job(client=user, clients_url=data)
+                    if Job.query.filter_by(clients_url=data).first() is None:
+                        new_url = Job(owner=user, clients_url=data)
                         DB.session.add(new_url)
                         DB.session.commit()
+                        return "Successfully saved."
+                    else:
+                        return "Exists in database."
             return "This client has no open jobs now."
 
     @classmethod
@@ -70,9 +71,33 @@ class JobController:
         return urls_by_user
 
     @classmethod
-    def read_jobs_data(cls):
-        list_all_urls = Job.query.all()
-        set_all_urls = set()
-        for url in list_all_urls:
-            set_all_urls.add(url.clients_url)
-        return set_all_urls
+    def read_urls_by_user(cls, client_name=None):
+        user = Client.query.filter_by(name=client_name).first()
+        urls_by_user = set()
+        if user is None:
+            return "No such user!"
+        list_all_data_table = Job.query.filter_by(client_id=user.id)
+        for url in list_all_data_table:
+            urls_by_user.add(url.clients_url)
+        return urls_by_user
+
+    @classmethod
+    def delete_not_actual(cls, request_data=None):
+        for url in request_data:
+            delete_row = Job.query.filter_by(clients_url=url).first()
+            DB.session.delete(delete_row)
+            DB.session.commit()
+        return "Deleted successfully!"
+
+    @classmethod
+    def add_new_actual(cls, client_name=None, request_data=None):
+        user = Client.query.filter_by(name=client_name).first()
+        job = Job.query.filter_by(clients_url=request_data).first()
+        if user is not None:
+            if job is None:
+                add_new = Job(client_id=user.id, clients_url=request_data)
+                DB.session.add(add_new)
+                DB.session.commit()
+                return 200
+            else:
+                return "This url already exists!"
