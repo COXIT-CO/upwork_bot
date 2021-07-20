@@ -1,4 +1,5 @@
-from models import DB, Client, Job
+from .models import DB, Client, Job
+
 
 URL = "https://www.upwork.com/jobs/"
 
