@@ -1,7 +1,7 @@
 import unittest
-from main import DB, app
-from models import Client, Job
-from controllers import ClientController, JobController
+from bot.app_config import DB, app
+from bot.schema.models import Client, Job
+from bot.schema.controllers import ClientController, JobController
 
 
 def data_to_client():

@@ -1,22 +1,14 @@
-import ssl
 import threading
 import time
 
-from flask import Flask, request, Response
+from flask import request, Response
 from slack_sdk import WebClient
 from slackeventsapi import SlackEventAdapter
 
-from models import DB
-from controllers import ClientController, JobController, URL
-from upwork_integration import configuration, get_job
+from bot.app_config import app
+from bot.schema.controllers import ClientController, JobController, URL
+from bot.upwork_integration import configuration, get_job
 
-ssl._create_default_https_context = ssl._create_unverified_context
-
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-DB.__init__(app)
 
 client = WebClient(token=configuration.get("SLACK", "slack_bot_token"))
 SLACK_WEBHOOK_URL = configuration.get("SLACK", "slack_webhook_url")
