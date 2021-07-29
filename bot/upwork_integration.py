@@ -1,3 +1,4 @@
+import logging
 from pprint import pprint
 import upwork
 from upwork.routers import auth
@@ -7,6 +8,7 @@ from configparser import ConfigParser
 configuration = ConfigParser()
 configuration.read("settings.ini")
 
+LOGGER = logging.getLogger()
 
 def get_desktop_client():
     token = {
@@ -28,8 +30,9 @@ def get_desktop_client():
 
     try:
         config.token
-    except AttributeError:
+    except AttributeError as e:
         authorization_url, state = client.get_authorization_url()
+        LOGGER.error("Upw auth error: ", e)
         # cover "state" flow if needed
         authz_code = input(
             "Please enter the full callback URL you get "
