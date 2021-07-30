@@ -148,10 +148,10 @@ def show_clients():
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "<%s | %s>" % (res_data[user], user)
-                        }
+                            "text": "<%s | %s>" % (res_data[user], user),
+                        },
                     }
-                ]
+                ],
             )
     return Response(), 200
 
@@ -240,7 +240,8 @@ def send_upw_time_request():
                     if add_new_actual_urls(key, new_url) == 200:
                         client.chat_postMessage(
                             channel="#upwork_bot",
-                            text=f"Got a new projects for you!: {key} -> {URL + new_url}")
+                            text=f"Got a new projects for you!: {key} -> {URL + new_url}",
+                        )
             time.sleep(100)
 
 
