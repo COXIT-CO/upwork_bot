@@ -21,8 +21,8 @@ slack_event_adapter = SlackEventAdapter(
 )
 
 LOGGER = logging.getLogger()
-LOG_CONFIG['root']['handlers'].append("file")
-flask_log = logging.getLogger('flask')
+LOG_CONFIG["root"]["handlers"].append("file")
+flask_log = logging.getLogger("flask")
 flask_log.setLevel(logging.ERROR)
 dictConfig(LOG_CONFIG)
 
@@ -141,17 +141,18 @@ def show_clients():
     if BOT_ID != user_id:
         res_data = restrict_all_users()
         for user in res_data:
-            client.chat_postMessage(channel=channel_id,
-                                    blocks=[
-                                        {
-                                            "type": "section",
-                                            "text": {
-                                                "type": "mrkdwn",
-                                                "text": "<%s | %s>" % (res_data[user], user)
-                                            }
-                                        }
-                                    ]
-                                    )
+            client.chat_postMessage(
+                channel=channel_id,
+                blocks=[
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": "<%s | %s>" % (res_data[user], user)
+                        }
+                    }
+                ]
+            )
     return Response(), 200
 
 
@@ -164,9 +165,9 @@ def show_client_urls():
     text = data.get("text")
 
     if BOT_ID != user_id:
-        all_by_user = restrict_all_user_urls(f'{text}')
+        all_by_user = restrict_all_user_urls(f"{text}")
         client.chat_postMessage(
-            channel=channel_id, text=f"{text}: %s" % [i for i in all_by_user]
+            channel=channel_id, text=f"{text}: %s" % [url for url in all_by_user]
         )
 
     return Response(), 200
@@ -238,7 +239,8 @@ def send_upw_time_request():
                 for new_url in new_uncommited_urls:
                     if add_new_actual_urls(key, new_url) == 200:
                         client.chat_postMessage(
-                            channel="#upwork_bot", text=f"Got a new projects for you!: {key} -> {URL + new_url}")
+                            channel="#upwork_bot",
+                            text=f"Got a new projects for you!: {key} -> {URL + new_url}")
             time.sleep(100)
 
 

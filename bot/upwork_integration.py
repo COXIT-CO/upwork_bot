@@ -10,6 +10,7 @@ configuration.read("settings.ini")
 
 LOGGER = logging.getLogger()
 
+
 def get_desktop_client():
     token = {
         "access_token": configuration.get("UPWORK", "access_token"),
