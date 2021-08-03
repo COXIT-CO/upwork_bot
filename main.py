@@ -241,7 +241,7 @@ def send_upw_time_request():
         else:
             if len(new_uncommited_urls) > 0:
                 for new_url in new_uncommited_urls:
-                    if add_new_actual_urls(key, new_url) == 200:
+                    if add_new_actual_urls(key, new_url) == SUCCESS_CODE:
                         client.chat_postMessage(
                             channel=CHANNEL_NAME,
                             text=f"Got a new projects for you!: {key} -> {URL + new_url}",
