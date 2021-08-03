@@ -202,7 +202,7 @@ def notiffication(func, sec=0, minutes=0, hours=0):
 
 def create_tread(func):
     enable_notification_thread = threading.Thread(
-        target=notiffication, kwargs=({"func": func, "minutes": 240})
+        target=notiffication, kwargs=({"func": func, "minutes": 330})
     )
     enable_notification_thread.daemon = True
     enable_notification_thread.start()
