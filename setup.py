@@ -8,6 +8,8 @@ from os import path
 def create_parser():
     """Creates parameters passed from console"""
     parser = argparse.ArgumentParser()
+    parser.add_argument("-hst", "--host")
+    parser.add_argument("-prt", "--port")
     parser.add_argument("-cid", "--client_id")
     parser.add_argument("-csc", "--client_secret")
     parser.add_argument("-at", "--access_token")
@@ -31,6 +33,10 @@ def initialize_variables():
         sys.exit(
             "Please check if you run script with parameters . Script is terminated"
         )
+
+    configuration.add_section("FLASK")
+    configuration["FLASK"]["host"] = namespace.host
+    configuration["FLASK"]["port"] = namespace.port
 
     configuration.add_section("UPWORK")
     configuration["UPWORK"]["client_id"] = namespace.client_id

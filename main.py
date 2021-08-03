@@ -14,18 +14,22 @@ import logging
 from logging.config import dictConfig
 from log import LOG_CONFIG
 
-client = WebClient(token=configuration.get("SLACK", "slack_bot_token"))
-SLACK_WEBHOOK_URL = configuration.get("SLACK", "slack_webhook_url")
-slack_event_adapter = SlackEventAdapter(
-    configuration.get("SLACK", "slack_signing_secret"), "/slack/event", app
-)
-
 LOGGER = logging.getLogger()
 LOG_CONFIG["root"]["handlers"].append("file")
 flask_log = logging.getLogger("flask")
 flask_log.setLevel(logging.ERROR)
 dictConfig(LOG_CONFIG)
 
+HOST = configuration.get("FLASK", "host")
+PORT = configuration.getint("FLASK", "port")
+SUCCESS_CODE = 200
+CHANNEL_NAME = "#upwork_bot"
+
+client = WebClient(token=configuration.get("SLACK", "slack_bot_token"))
+SLACK_WEBHOOK_URL = configuration.get("SLACK", "slack_webhook_url")
+slack_event_adapter = SlackEventAdapter(
+    configuration.get("SLACK", "slack_signing_secret"), "/slack/event", app
+)
 BOT_ID = client.api_call("auth.test")["user_id"]
 
 
@@ -153,7 +157,7 @@ def show_clients():
                     }
                 ],
             )
-    return Response(), 200
+    return Response(), SUCCESS_CODE
 
 
 @app.route("/client-urls", methods=["POST"])
@@ -170,7 +174,7 @@ def show_client_urls():
             channel=channel_id, text=f"{text}: %s" % [url for url in all_by_user]
         )
 
-    return Response(), 200
+    return Response(), SUCCESS_CODE
 
 
 @app.route("/delete-client", methods=["POST"])
@@ -186,7 +190,7 @@ def delete_client():
             channel=channel_id, text=f"{cascade_delete_user(f'{text}')}"
         )
 
-    return Response(), 200
+    return Response(), SUCCESS_CODE
 
 
 def notiffication(func, sec=0, minutes=0, hours=0):
@@ -239,7 +243,7 @@ def send_upw_time_request():
                 for new_url in new_uncommited_urls:
                     if add_new_actual_urls(key, new_url) == 200:
                         client.chat_postMessage(
-                            channel="#upwork_bot",
+                            channel=CHANNEL_NAME,
                             text=f"Got a new projects for you!: {key} -> {URL + new_url}",
                         )
             time.sleep(100)
@@ -248,4 +252,4 @@ def send_upw_time_request():
 if __name__ == "__main__":
     send_upw_time_request()
     create_tread(send_upw_time_request)
-    app.run(host="0.0.0.0", port="8080")
+    app.run(host=HOST, port=PORT)

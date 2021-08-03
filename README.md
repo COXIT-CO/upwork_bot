@@ -26,6 +26,10 @@ After that, visit https://api.slack.com/, create your app and connect to your wo
 When you clone this repository and want to start program:
 first what you need to do is to run 'setup.py' file with parameters:
 
+`-hst`: Flask host
+
+`-prt`: Flask port
+
 `-cid`: Upwork client id
 
 `-csc`: Upwork client secret
@@ -47,7 +51,7 @@ first what you need to do is to run 'setup.py' file with parameters:
 `-swu`: Slack webhook url
 
 Example:
-- python setup.py -cid your_secret_data_here -csc your_secret_data_here -at your_secret_data_here -eat your_secret_data_here -ein your_secret_data_here -rt your_secret_data_here -tt your_secret_data_here -sbt your_secret_data_here -sss your_secret_data_here -swu https://hooks.slack.com/services/your_secret_url
+- python setup.py -hst 127.0.0.1 -prt 5000 -cid your_secret_data_here -csc your_secret_data_here -at your_secret_data_here -eat your_secret_data_here -ein your_secret_data_here -rt your_secret_data_here -tt your_secret_data_here -sbt your_secret_data_here -sss your_secret_data_here -swu https://hooks.slack.com/services/your_secret_url
 
 
 As a result, `settings.ini` file will be created with all your data inside. So next time you don't have to input all parameters.
