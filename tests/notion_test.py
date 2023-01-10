@@ -1,5 +1,5 @@
 import pytest
-from ..notion.db_scraper import is_database_id_valid
+from notion.db_scraper import is_database_id_valid
 
 
 class TestDatabaseId:
@@ -10,7 +10,7 @@ class TestDatabaseId:
             "919378061a9542e4a3c6340d9e002a73",
         ],
     )
-    def test_valid_database_id(test):
+    def test_valid_database_id(self, test):
         assert is_database_id_valid(test)
 
     @pytest.mark.parametrize(
@@ -21,5 +21,5 @@ class TestDatabaseId:
             "dfb@434-%jf63-&jhdf234",  # string contains wrong letters
         ],
     )
-    def test_invalid_database_id(test):
+    def test_invalid_database_id(self, test):
         assert not is_database_id_valid(test)
