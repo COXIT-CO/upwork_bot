@@ -14,7 +14,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          # packages from requirements.txt are needed to eliminate errors when importing functions to be tested
+          pip install -r requirements.txt
       - name: Run tests
         run: |
           python -m pytest
