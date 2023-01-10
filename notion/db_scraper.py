@@ -10,10 +10,11 @@ def run(notion_page_url: str):
     """whole process from receiving link to notion page with database
     to return the extracted projects links in database"""
     is_url_valid = validators.url(notion_page_url)
-    database_id = get_database_id_from_url(notion_page_url)
-    if is_url_valid and is_database_id_valid(database_id):
-        return get_projects_urls(database_id)
-    return ""
+    if is_url_valid:
+        database_id = get_database_id_from_url(notion_page_url)
+        if is_database_id_valid(database_id):
+            # return list with projects urls or None that is converted to False
+            return get_projects_urls(database_id)
 
 
 def get_projects_urls(database_id: str):
