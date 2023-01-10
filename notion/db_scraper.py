@@ -14,6 +14,8 @@ def run(notion_page_url: str):
         database_id = get_database_id_from_url(notion_page_url)
         if is_database_id_valid(database_id):
             return get_projects_urls(database_id)
+        return ""
+    return ""
 
 
 def get_projects_urls(database_id: str):
