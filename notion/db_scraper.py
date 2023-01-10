@@ -18,5 +18,6 @@ def get_projects_urls(database_id: str):
 
 def get_database_id_from_url(url: str):
     url_ending = url.split("/")[-1]
-    database_id = url_ending[:32]  # first 32 letters matching database id
+    # if database id contains hyphens capture first 36 letters else 32
+    database_id = url_ending[:36] if "-" in url_ending[:36] else url_ending[:32]
     return database_id
