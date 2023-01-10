@@ -7,10 +7,8 @@ dotenv.load_dotenv(".env")
 def get_projects_urls(database_id: str):
     """given database id extract all projects urls from table"""
     projects_urls = []
-    DB = Database(
-        integrations_token=os.getenv("NOTION_TOKEN"))
-    DB.retrieve_database(
-        database_id=database_id)
+    DB = Database(integrations_token=os.getenv("NOTION_TOKEN"))
+    DB.retrieve_database(database_id=database_id)
     DB.find_all_page(database_id=database_id)
     for page in DB.result['results']:
         projects_urls.append(page['properties']['Link']['url'])
