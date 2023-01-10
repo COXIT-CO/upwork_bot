@@ -36,6 +36,8 @@ def get_database_id_from_url(url: str):
 
 
 def is_database_id_valid(database_id: str):
+    if len(database_id) not in (32, 36):
+        return False
     for letter in database_id:
         if not (letter.isalnum() or letter.isalpha() or letter == "-"):
             return False
