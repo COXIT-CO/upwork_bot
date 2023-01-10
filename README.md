@@ -9,6 +9,11 @@ Run `pip install -r requirements.txt` to install all required libraries.
 
 Upwork account, with given credentials from Upwork API.
 
+# Notion setup
+Visit [link](https://developers.notion.com/docs/create-a-notion-integration#step-1-create-an-integration) and do first 2 steps.
+
+Pay attention at ```.env.samples``` file in project root. Create the same one with ```.env``` name and populate it with your notion token.
+
 
 # Upwork API setup
 You need to have valid upwork account and then you can request access to Upwork's API in order to integrate Upwork's features with their website and/or internal systems.
