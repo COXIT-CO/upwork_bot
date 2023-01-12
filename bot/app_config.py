@@ -4,7 +4,7 @@ from .schema.models import DB
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-DB.__init__(app)
+flask_app = Flask(__name__)
+flask_app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
+flask_app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+DB.__init__(flask_app)
