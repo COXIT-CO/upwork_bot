@@ -14,8 +14,7 @@ class ClientController:
         if user is not None or user_by_url is not None:
             return "User with this name or url is already exist!"
         new_user = Client(name=name, url=url)
-        DB.session.add(new_user)
-        DB.session.commit()
+        new_user.save()
         return "Successfully created!"
 
     @classmethod
