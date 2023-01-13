@@ -3,10 +3,7 @@ from pprint import pprint
 import upwork
 from upwork.routers import auth
 from upwork.routers.jobs import profile
-from configparser import ConfigParser
-
-configuration = ConfigParser()
-configuration.read("settings.ini")
+from app_config import configuration
 
 LOGGER = logging.getLogger()
 

@@ -8,7 +8,8 @@ from slackeventsapi import SlackEventAdapter
 
 from bot.app_config import app
 from bot.schema.controllers import ClientController, JobController, URL
-from bot.upwork_integration import configuration, get_job
+from bot.app_config import configuration
+from bot.upwork_integration import get_job
 
 import logging
 from logging.config import dictConfig
