@@ -1,6 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-
-DB = SQLAlchemy()
+from app.database import DB
 
 
 class Client(DB.Model):
