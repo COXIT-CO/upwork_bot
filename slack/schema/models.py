@@ -41,8 +41,8 @@ class Job(DB.Model):
         DB.session.commit()
 
 
-class SlackUserNotionTable(DB.Model):
-    """model describing relation between notion table url and slack user"""
+class SlackNotion(DB.Model):
+    """model describing relation between slack user and notion table url"""
 
     __tablename__ = "slack_user_notion_table"
 
