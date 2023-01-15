@@ -39,3 +39,21 @@ class Job(DB.Model):
     def delete(self):
         DB.session.delete(self)
         DB.session.commit()
+
+
+class SlackUserNotionTable(DB.Model):
+    """model describing relation between notion table url and slack user"""
+
+    __tablename__ = "slack_user_notion_table"
+
+    id = DB.Column(DB.Integer, primary_key=True)
+    slack_user_id = DB.Column(DB.Integer, unique=True)
+    notion_table_url = DB.Column(DB.String(100))
+
+    def save(self):
+        DB.session.add(self)
+        DB.session.commit()
+
+    def update(self, notion_table_url):
+        self.notion_table_url = notion_table_url
+        DB.session.commit()
