@@ -10,7 +10,7 @@ def create_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-hst", "--host")
     parser.add_argument("-prt", "--port")
-    parser.add_argument("-prt", "--notion_token")
+    parser.add_argument("-ntk", "--notion_token")
     parser.add_argument("-cid", "--client_id")
     parser.add_argument("-csc", "--client_secret")
     parser.add_argument("-at", "--access_token")
