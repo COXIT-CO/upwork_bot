@@ -57,3 +57,7 @@ class SlackUserNotionTable(DB.Model):
     def update(self, notion_table_url):
         self.notion_table_url = notion_table_url
         DB.session.commit()
+
+    def delete(self):
+        DB.session.delete(self)
+        DB.session.commit()
