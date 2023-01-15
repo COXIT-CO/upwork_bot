@@ -26,7 +26,7 @@ class ClientController:
         result_dict = {}
         for client in clients:
             result_dict[client.name] = URL + client.url
-        return result_dict
+        return result_dict if result_dict else ""
 
     @classmethod
     def get(cls, name=None, url=None):
@@ -39,7 +39,7 @@ class ClientController:
             if name is not None
             else Client.query.filter_by(url=url).first()
         )
-        return client
+        return client if client else ""
 
     @classmethod
     def delete(cls, name=None):
@@ -75,7 +75,7 @@ class JobController:
         if job_id is None:
             return "You haven't provided job id! It's required"
         job = Job.query.filter(job_id=job_id).first()
-        return job
+        return job if job else ""
 
     @classmethod
     def delete(cls, job_id=None):
@@ -98,10 +98,7 @@ class SlackNotionController:
             return "You haven't provided slack user id! It's required"
         if notion_table_url is None:
             return "You haven't provided notion table url! It's required"
-        if (
-            SlackNotion.query.filter_by(slack_user_id=slack_user_id).first()
-            is None
-        ):
+        if SlackNotion.query.filter_by(slack_user_id=slack_user_id).first() is None:
             new_relation = SlackNotion(
                 slack_user_id=slack_user_id, notion_table_url=notion_table_url
             )
@@ -110,10 +107,9 @@ class SlackNotionController:
         else:
             return "Relation already in database!"
 
-
     @classmethod
     def get(cls, slack_user_id=None):
         if slack_user_id is None:
             return "You haven't provided slack user id! It's required"
         relation = SlackNotion.query.filter(slack_user_id=slack_user_id).first()
-        return relation
+        return relation if relation else ""
