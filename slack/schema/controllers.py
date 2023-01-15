@@ -43,6 +43,8 @@ class ClientController:
 
     @classmethod
     def delete(cls, name=None):
+        if name is None:
+            return "You haven't provided client name! It's required"
         client = Client.query.filter_by(name=name).first()
         if client is None:
             return "No such client!"
@@ -82,6 +84,8 @@ class JobController:
         if job_id is None:
             return "You haven't provided job id! It's required"
         job = Job.query.filter_by(job_id=job_id).first()
+        if job is None:
+            return "No such job opening!"
         client_id = job.client_id
         jobs_by_client = Job.query.filter_by(client_id=job.client_id).all()
         job.delete()
@@ -113,3 +117,14 @@ class SlackNotionController:
             return "You haven't provided slack user id! It's required"
         relation = SlackNotion.query.filter(slack_user_id=slack_user_id).first()
         return relation if relation else ""
+
+
+    @classmethod
+    def delete(cls, slack_user_id=None):
+        if slack_user_id is None:
+            return "You haven't provided slack user id! It's required"
+        relation = SlackNotion.query.filter_by(slack_user_id=slack_user_id).first()
+        if relation is None:
+            return "No such relation!"
+        relation.delete()
+        return "Deleted successfully!"
