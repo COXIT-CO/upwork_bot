@@ -118,7 +118,6 @@ class SlackNotionController:
         relation = SlackNotion.query.filter(slack_user_id=slack_user_id).first()
         return relation if relation else ""
 
-
     @classmethod
     def delete(cls, slack_user_id=None):
         if slack_user_id is None:
