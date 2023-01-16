@@ -1,5 +1,5 @@
 import pytest
-from notion.db_scraper import is_database_id_valid, get_database_id_from_url
+from notion.notion_table_scraper import is_database_id_valid, get_database_id_from_url
 
 
 class TestDatabaseId:
