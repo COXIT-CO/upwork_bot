@@ -1,28 +1,16 @@
 import json
 import threading
 import time
+import logging
 
 from flask import request, Response
-
-from bot.app_config import flask_app
-from bot.schema.controllers import ClientController, JobController, URL
-from bot.app_config import configuration
-from bot.upwork_integration import get_job
-
-import logging
+from ..slack.schema.controllers import ClientController, JobController, URL
+from config_parser import configuration
+from ..upwork.upwork_integration import get_job
 from logging.config import dictConfig
 from log import LOG_CONFIG
-from slack_bolt import App
-
-slack_bot_app = App(
-    signing_secret=configuration.get("FLASK", "slack_signing_secret"),
-    token=configuration.get("FLASK", "slack_bot_token")
-)
-
-# Initialize Flask app
-from flask import Flask, request
-
-flask_app = Flask(__name__)
+from ..slack.app import slack_bot_app
+from app import flask_app
 
 # SlackRequestHandler translates WSGI requests to Bolt's interface
 # and builds WSGI response from Bolt's response.
