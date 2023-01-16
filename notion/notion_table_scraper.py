@@ -1,8 +1,6 @@
-import dotenv
-import os
 import validators
 from notion_database.database import Database
-from ..app.config_parser import configuration
+from app.config_parser import configuration
 
 
 def scrape_notion_table(notion_page_url: str):
