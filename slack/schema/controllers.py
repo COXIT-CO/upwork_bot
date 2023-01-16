@@ -1,4 +1,4 @@
-from .models import Client, Job, SlackNotion
+from .models import Client, Job
 from ...upwork.utils import get_job_id_from_url
 
 
@@ -92,38 +92,4 @@ class JobController:
         if not len(jobs_by_client):
             client = Client.query.filter_by(id=client_id).first()
             client.delete()
-        return "Deleted successfully!"
-
-
-class SlackNotionController:
-    @classmethod
-    def create(cls, slack_user_id=None, notion_table_url=None):
-        if slack_user_id is None:
-            return "You haven't provided slack user id! It's required"
-        if notion_table_url is None:
-            return "You haven't provided notion table url! It's required"
-        if SlackNotion.query.filter_by(slack_user_id=slack_user_id).first() is None:
-            new_relation = SlackNotion(
-                slack_user_id=slack_user_id, notion_table_url=notion_table_url
-            )
-            new_relation.save()
-            return "Successfully saved."
-        else:
-            return "Relation already in database!"
-
-    @classmethod
-    def get(cls, slack_user_id=None):
-        if slack_user_id is None:
-            return "You haven't provided slack user id! It's required"
-        relation = SlackNotion.query.filter(slack_user_id=slack_user_id).first()
-        return relation if relation else ""
-
-    @classmethod
-    def delete(cls, slack_user_id=None):
-        if slack_user_id is None:
-            return "You haven't provided slack user id! It's required"
-        relation = SlackNotion.query.filter_by(slack_user_id=slack_user_id).first()
-        if relation is None:
-            return "No such relation!"
-        relation.delete()
         return "Deleted successfully!"
