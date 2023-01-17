@@ -10,12 +10,24 @@ class UpworkClient:
     """class holding all-upwork-binded information including upwork client to successfully access Upwork API"""
 
     def __init__(self, client_id, client_secret, redirect_url, access_token_data):
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.access_token_data = access_token_data
-        self.client = self.get_upwork_client(client_id, client_secret, redirect_url)
+        """
+        e.g. of access_token_data parameter:
+        {
+            'access_token': 'your_access_token',
+            'expires_at': 123456789.1234567,
+            'expires_in': 86400,
+            'refresh_token': 'your_refresh_token',
+            'token_type': 'Bearer'
+        }
+        """
+        self.__client_id = client_id
+        self.__client_secret = client_secret
+        self.__redirect_url = redirect_url
+        self.__access_token_data = access_token_data
+        self.__client = self.get_upwork_client(client_id, client_secret, redirect_url)
 
-    def get_upwork_client(self, client_id, client_secret, access_token_data):
+    @staticmethod
+    def get_upwork_client(client_id, client_secret, access_token_data):
         """creation of "upwork client" to access Upwork API"""
         config = upwork.Config(
             {
@@ -27,35 +39,30 @@ class UpworkClient:
         client = upwork.Client(config)
         return client
 
-    def refresh_access_token_data(
-        self, refresh_token, client_id, client_secret, redirect_url
-    ):
+    def refresh_access_token_data(self):
         """
         once upwork access token expires (it's valid for 24 hours) we need to refresh it using refresh token that is valid for 2 weeks
 
-        function returns new dictionary with new tokens (access and refresh ones) data as shown
-        e.g. of returned dictionary:
-        {
-            'access_token': 'oauth2v2_419655edb57520a232655fa25a1070be',
-            'expires_at': 1673988561.2039783,
-            'expires_in': 86400,
-            'refresh_token': 'oauth2v2_4edb7804d59f5f5229d6d6b8017b2016',
-            'token_type': 'Bearer'
-        }
+        return result is dictionary of same key-value structure as access_token_data parameter in __init__ method. Take a look at comment for it
         """
         url = "https://www.upwork.com/api/v3/oauth2/token"
+        refresh_token = self.__access_token_data["refresh_token"]
         parameters = {
             "grant_type": "refresh_token",
-            "client_id": client_id,
-            "client_secret": client_secret,
-            "redirect_url": redirect_url,
+            "client_id": self.__client_id,
+            "client_secret": self.__client_secret,
+            "redirect_url": self.__redirect_url,
             "refresh_token": refresh_token,
         }
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
-        refreshed_access_data = requests.post(
+        refreshed_access_token_data = requests.post(
             url=url, params=parameters, headers=headers
         )
-        return refreshed_access_data.json()
+        # update access token data and upwork client
+        self.__access_token_data = refreshed_access_token_data.json()
+        self.__client = self.get_upwork_client(
+            self.__client_id, self.__client_secret, self.__access_token_data
+        )
 
 
 class Job:
