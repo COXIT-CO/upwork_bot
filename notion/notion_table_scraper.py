@@ -1,14 +1,11 @@
-import dotenv
-import os
 import validators
 from notion_database.database import Database
+from app.config_parser import configuration
 
-dotenv.load_dotenv(".env")
 
-
-def run(notion_page_url: str):
-    """whole process from receiving link to notion page with database
-    to return the extracted projects links in database"""
+def scrape_notion_table(notion_page_url: str):
+    """main function. Whole process from receiving link to notion page
+    with database to return the extracted projects links in database"""
     is_url_valid = validators.url(notion_page_url)
     if is_url_valid:
         database_id = get_database_id_from_url(notion_page_url)
@@ -20,7 +17,7 @@ def run(notion_page_url: str):
 def get_projects_urls(database_id: str):
     """given database id extract all projects urls from table"""
     projects_urls = []
-    DB = Database(integrations_token=os.getenv("NOTION_TOKEN"))
+    DB = Database(integrations_token=configuration.get("NOTION", "token"))
     DB.retrieve_database(database_id=database_id)
     DB.find_all_page(database_id=database_id)
     for page in DB.result["results"]:

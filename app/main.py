@@ -1,18 +1,22 @@
 import json
 import threading
 import time
+import logging
 
 from flask import request, Response
-from slack_sdk import WebClient
-from slackeventsapi import SlackEventAdapter
-
-from bot.app_config import app
-from bot.schema.controllers import ClientController, JobController, URL
-from bot.upwork_integration import configuration, get_job
-
-import logging
+from ..slack.schema.controllers import ClientController, JobController, URL
+from config_parser import configuration
+from ..upwork.upwork_integration import get_job
 from logging.config import dictConfig
 from log import LOG_CONFIG
+from ..slack.app import slack_bot_app
+from .app import flask_app
+
+# SlackRequestHandler translates WSGI requests to Bolt's interface
+# and builds WSGI response from Bolt's response.
+from slack_bolt.adapter.flask import SlackRequestHandler
+
+handler = SlackRequestHandler(slack_bot_app)
 
 LOGGER = logging.getLogger()
 LOG_CONFIG["root"]["handlers"].append("file")
@@ -24,13 +28,6 @@ HOST = configuration.get("FLASK", "host")
 PORT = configuration.getint("FLASK", "port")
 SUCCESS_CODE = 200
 CHANNEL_NAME = "#upwork_bot"
-
-client = WebClient(token=configuration.get("SLACK", "slack_bot_token"))
-SLACK_WEBHOOK_URL = configuration.get("SLACK", "slack_webhook_url")
-slack_event_adapter = SlackEventAdapter(
-    configuration.get("SLACK", "slack_signing_secret"), "/slack/event", app
-)
-BOT_ID = client.api_call("auth.test")["user_id"]
 
 
 def create_new_user(request_data):
@@ -106,7 +103,7 @@ def add_new_actual_urls(client_name, request_data):
     return JobController.add_new_actual(client_name, request_data)
 
 
-@slack_event_adapter.on("message")
+@slack_bot_app.on("message")
 def message(payload):
     """Event, reacting on message in chat"""
     event = payload.get("event", {})
@@ -135,7 +132,7 @@ def message(payload):
         LOGGER.error("Slack default error of 2 messages %s", e)
 
 
-@app.route("/all-clients", methods=["POST"])
+@flask_app.route("/all-clients", methods=["POST"])
 def show_clients():
     """Slash-command, which show all clients"""
     data = request.form
@@ -160,7 +157,7 @@ def show_clients():
     return Response(), SUCCESS_CODE
 
 
-@app.route("/client-urls", methods=["POST"])
+@flask_app.route("/client-urls", methods=["POST"])
 def show_client_urls():
     """Slash-command, which show all urls by client"""
     data = request.form
@@ -177,7 +174,7 @@ def show_client_urls():
     return Response(), SUCCESS_CODE
 
 
-@app.route("/delete-client", methods=["POST"])
+@flask_app.route("/delete-client", methods=["POST"])
 def delete_client():
     """Slash-command, which delete client by name"""
     data = request.form
@@ -252,4 +249,4 @@ def send_upw_time_request():
 if __name__ == "__main__":
     send_upw_time_request()
     create_tread(send_upw_time_request)
-    app.run(host=HOST, port=PORT)
+    flask_app.run(host=HOST, port=PORT)

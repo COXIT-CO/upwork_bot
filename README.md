@@ -2,6 +2,19 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/coxit-co/upwork_bot/badge?s=f80a00123d45808c5c0b6d8cff8fab3e607b160c)](https://www.codefactor.io/repository/github/coxit-co/upwork_bot)
 [![buddy pipeline](https://app.buddy.works/soleskevych/upwork-bot/pipelines/pipeline/338573/badge.svg?token=00f56263ddf955f429925817a0fc038c807db2c528fbf0704c14a05c05ceaa31 "buddy pipeline")](https://app.buddy.works/soleskevych/upwork-bot/pipelines/pipeline/338573)
 
+# What does this bot do?
+A bot is integration of Slack, Upwork and Notion platforms to automate new projects seeking. Once or more times a day notion table notes are iterated through to get project links. Having them requests to Upwork API are made to get full necessary info about job: title, other opened jobs by client and their titles. If new projects appeared comparing with previous such iteration, which is figured out by quering and comparing database entries, bot sends message in Slack through Slack bot
+
+# Architecture notes
+Project consists of separate logical parts:
+- *app* - flask app itself composing all other parts. **Also it manages read/write transactions from/to SQLite database**
+- *slack* part responsible for integration with Slack platform. **In schema/models directory you will find two ORM classes matching tables in database**
+- *notion* part serves notion tables notes extraction namely extraction job links
+- *upwork* part provides access to work with Upwork API
+- *tests* is test coverage for entire project
+
+*!!! Worth mentioning that notion table scraping + slack message send is done with cron jobs*
+
 # Requirements
 Python 3.9
 
