@@ -8,7 +8,7 @@ A bot is integration of Slack, Upwork and Notion platforms to automate new proje
 # Architecture notes
 Project consists of separate logical parts:
 - *app* - flask app itself composing all other parts. **Also it manages read/write transactions from/to SQLite database**
-- *slack* part responsible for integration with Slack platform. **Here in schema/models directory you will find two ORM classes matching tables in database**
+- *slack* part responsible for integration with Slack platform. **In schema/models directory you will find two ORM classes matching tables in database**
 - *notion* part serves notion tables notes extraction namely extraction job links
 - *upwork* part provides access to work with Upwork API
 - *tests* is test coverage for entire project
