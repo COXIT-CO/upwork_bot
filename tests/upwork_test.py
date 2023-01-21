@@ -80,7 +80,9 @@ class TestUpworkJob:
             pytest.mark.xfail(strict=True)
             job = Job(job_url)
             with pytest.raises(CustomException):
-                job.get_job(upwork_client.receive_upwork_client())  # wrong job key should raise an exception
+                job.get_job(
+                    upwork_client.receive_upwork_client()
+                )  # wrong job key should raise an exception
         elif test_id == 3:
             """should raise an exception on the stage of Job object creation"""
             pytest.mark.xfail(strict=True)
