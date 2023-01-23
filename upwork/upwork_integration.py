@@ -98,7 +98,7 @@ class Job:
         if validators.url(job_url) and "www.upwork.com/jobs" in job_url:
             self.__job_url = job_url
         else:
-            raise exceptions.CustomException("Job url is invalid!")
+            raise exceptions.CustomException(f"Job url {job_url} is invalid!")
 
     def serialize_job(self):
         """convert job to python dict object"""
@@ -125,7 +125,7 @@ class Job:
         job_data = profile.Api(upwork_client).get_specific(job_key)
         if "error" in job_data:
             raise exceptions.CustomException(
-                "Your job url contain wrong job key (letters after '~' symbol)!"
+                "Your job url {self.job_url} contains wrong job key {job_key} (letters after '~' symbol)!"
             )
 
         job = Job(self.__job_url)
