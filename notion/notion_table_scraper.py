@@ -17,7 +17,7 @@ def scrape_notion_table(notion_page_url: str):
 def get_projects_urls(database_id: str):
     """given database id extract all projects urls from table"""
     projects_urls = []
-    DB = Database(integrations_token=os.getenv("secret_o1kyubNpJ5XKD5pSVq8OLmq8KC2F64wAAa1GVWdczyQ"))
+    DB = Database(integrations_token=os.getenv("NOTION_TOKEN"))
     DB.retrieve_database(database_id=database_id)
     DB.find_all_page(database_id=database_id)
     for page in DB.result["results"]:
