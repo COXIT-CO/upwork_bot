@@ -17,5 +17,9 @@ jobs:
           # packages from requirements.txt are needed to eliminate errors when importing functions to be tested
           pip install -r requirements.txt
       - name: Run tests
+        env:
+          CLIENT_ID: ${{ secrets.CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
         run: |
           python -m pytest
