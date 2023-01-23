@@ -2,6 +2,7 @@ import logging
 import upwork
 import requests
 import validators
+import os
 from upwork.routers.jobs import profile
 from upwork.routers import auth
 from . import exceptions
@@ -178,3 +179,10 @@ class Job:
 
         self.__other_opened_jobs = other_opened_jobs
         return other_opened_jobs
+
+
+upwork_client = UpworkClient(
+    client_id=os.getenv("CLIENT_ID"),
+    client_secret=os.getenv("CLIENT_SECRET"),
+    access_token_data={"refresh_token": os.getenv("REFRESH_TOKEN")},
+)
