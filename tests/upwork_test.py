@@ -1,10 +1,9 @@
 import os
 import dotenv
-import pytest
-from upwork_bot.upwork.exceptions import CustomException
-from upwork_bot.upwork.upwork_integration import UpworkClient, Job
-
 dotenv.load_dotenv(".env")
+import pytest
+from ..upwork.exceptions import CustomException
+from ..upwork.upwork_integration import UpworkClient, Job
 
 UPWORK_CLIENT_ID = os.getenv("CLIENT_ID")
 UPWORK_CLIENT_SECRET = os.getenv("CLIENT_SECRET")
