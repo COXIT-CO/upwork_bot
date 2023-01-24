@@ -1,8 +1,8 @@
 import os
 import dotenv
 import pytest
-from upwork_bot.upwork.exceptions import CustomException
-from upwork_bot.upwork.upwork_integration import UpworkClient, Job
+from ..upwork_part.exceptions import CustomException
+from ..upwork_part.upwork_integration import UpworkClient, Job
 
 dotenv.load_dotenv(".env")
 
