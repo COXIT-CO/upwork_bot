@@ -1,10 +1,10 @@
 import logging
-import upwork
-import requests
-import validators
 import os
-from upwork.routers.jobs import profile
+import requests
+import upwork
+import validators
 from upwork.routers import auth
+from upwork.routers.jobs import profile
 from . import exceptions
 
 LOGGER = logging.getLogger()
@@ -34,11 +34,12 @@ class UpworkClient:
 
     def validate_parameters(self, client_id, client_secret, access_token_data):
         """Verify client id, client secret and access_token_data (contains access_token and refresh_token) parameters aren't empty, have proper types and acceptable by Upwork platform"""
-        for key, value in {
+        upwork_client_parameters = {
             "Client id": (client_id, str),
             "Client secret": (client_secret, str),
             "Access token data": (access_token_data, dict),
-        }.items():
+        }
+        for key, value in upwork_client_parameters.items():
             if value is None or not value[0] or type(value[0]) != value[1]:
                 raise exceptions.CustomException(
                     f"{key} is empty or its type isn't {value[1]}!"
@@ -96,7 +97,8 @@ class UpworkClient:
 
 class Job:
     def __init__(self, job_url):
-        if validators.url(job_url) and "www.upwork.com/jobs" in job_url:
+        required_url_substring = "www.upwork.com/jobs"
+        if validators.url(job_url) and required_url_substring in job_url:
             self.__job_url = job_url
         else:
             raise exceptions.CustomException(f"Job url {job_url} is invalid!")
@@ -167,7 +169,10 @@ class Job:
             other_opened_jobs.append(job)
         else:
             # client has many other jobs
-            for job_dict in job_data["profile"]["op_other_jobs"]["op_other_job"]:
+            other_opened_jobs_dict = job_data["profile"]["op_other_jobs"][
+                "op_other_job"
+            ]
+            for job_dict in other_opened_jobs_dict:
                 job_key = job_dict["op_ciphertext"]
                 job_data = profile.Api(upwork_client).get_specific(job_key)
                 full_job_url = upwork_job_generic_url + job_key
