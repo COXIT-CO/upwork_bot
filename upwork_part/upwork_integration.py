@@ -105,10 +105,7 @@ class Job:
 
     def serialize_job(self):
         """convert job to python dict object"""
-        serialized_job_info = {
-            "job_url": self.__job_url,
-            "job_title": self.__job_title,
-        }
+        serialized_job_info = {"job_url": self.__job_url}
         other_opened_jobs = []
         for other_job in self.__other_opened_jobs:
             other_job_info = {
@@ -132,10 +129,7 @@ class Job:
             )
 
         job = Job(self.__job_url)
-        # do not save returned values as they will be saved implicitly as object properties,
-        # so this can be treated as initialization
-        job.extract_job_title(job_data)
-        # here we pass upwork client because for each job opening we need to make request to get job title
+        # here we pass upwork client because for each job opening we need to make request to get job url
         job.extract_other_opened_jobs(job_data, upwork_client)
 
         return job
@@ -155,9 +149,9 @@ class Job:
     def extract_other_opened_jobs(self, job_data, upwork_client):
         """from passed job content-holding dict extract keys of other opened jobs and using upwork client make requests to get job content-holding dict and extract job title for each such job"""
         other_opened_jobs = []  # list of Job objects
-
         upwork_job_generic_url = "https://www.upwork.com/jobs/"
-        if len(job_data["profile"]["op_other_jobs"]["op_other_job"]) == 1:
+        other_opened_jobs_data = job_data["profile"]["op_other_jobs"]["op_other_job"]
+        if len(other_opened_jobs_data) == 1:
             # client has only one other job
             full_job_url = (
                 upwork_job_generic_url
@@ -169,10 +163,7 @@ class Job:
             other_opened_jobs.append(job)
         else:
             # client has many other jobs
-            other_opened_jobs_dict = job_data["profile"]["op_other_jobs"][
-                "op_other_job"
-            ]
-            for job_dict in other_opened_jobs_dict:
+            for job_dict in other_opened_jobs_data:
                 job_key = job_dict["op_ciphertext"]
                 job_data = profile.Api(upwork_client).get_specific(job_key)
                 full_job_url = upwork_job_generic_url + job_key
