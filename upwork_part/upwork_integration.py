@@ -168,7 +168,9 @@ class Job:
             other_opened_jobs.append(job)
         else:
             # client has many other jobs
-            other_opened_jobs_dict = job_data["profile"]["op_other_jobs"]["op_other_job"]
+            other_opened_jobs_dict = job_data["profile"]["op_other_jobs"][
+                "op_other_job"
+            ]
             for job_dict in other_opened_jobs_dict:
                 job_key = job_dict["op_ciphertext"]
                 job_data = profile.Api(upwork_client).get_specific(job_key)
