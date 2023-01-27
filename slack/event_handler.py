@@ -59,11 +59,11 @@ def handle_subscription(notion_table_url):
 
 def save_jobs_to_db(serialized_job_data):
     job_controller = JobController()
-    job_url = serialized_job_data['job_url']
+    job_url = serialized_job_data["job_url"]
     with flask_app.app_context():
         job_controller.create(job_url)
-        for job_data in serialized_job_data['other_opened_jobs']:
-            job_controller.create(job_data['job_url'])
+        for job_data in serialized_job_data["other_opened_jobs"]:
+            job_controller.create(job_data["job_url"])
 
 
 @slack_bot_app.command("/subscribe")
@@ -89,7 +89,7 @@ def subscribe(ack, body):
 def handle_some_action(ack, body, payload, client):
     ack()
     if "value" in payload:
-        jobs_to_list = ast.literal_eval(payload['value'])
+        jobs_to_list = ast.literal_eval(payload["value"])
     else:
         jobs_to_list = ast.literal_eval(os.getenv("JOBS"))
     client.views_open(

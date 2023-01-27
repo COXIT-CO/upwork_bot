@@ -1,9 +1,12 @@
 import os
+
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 import dotenv
+
 dotenv.load_dotenv(level_up_directory_path + "/.env")
 import sys
+
 sys.path.insert(0, level_up_directory_path)
 from app.app import flask_app
 from notion.notion_table_scraper import scrape_notion_table
@@ -13,6 +16,7 @@ from upwork_part.schema.controllers import JobController
 from upwork_part.schema.models import Job as JobModel
 from upwork_part.upwork_integration import Job
 from upwork_part.upwork_integration import upwork_client
+
 
 def delete_jobs_from_env_file():
     with open(level_up_directory_path + "/.env", "r") as file:
@@ -26,7 +30,7 @@ def delete_jobs_from_env_file():
 def find_new_job_openings(job_controller, opened_jobs):
     new_job_openings = []
     for job in opened_jobs:
-        job_url = job['job_url']
+        job_url = job["job_url"]
         with flask_app.app_context():
             job_object = job_controller.get(job_url)
         if not job_object:
@@ -73,21 +77,25 @@ def run():
             job_controller.create(job_url)
         job_title = job_data["title"]
         try:
-            job = Job(job_url).get_job(upwork_client.receive_upwork_client())   # line potentially causing error
+            job = Job(job_url).get_job(
+                upwork_client.receive_upwork_client()
+            )  # line potentially causing error
             serialized_job_info = job.serialize_job()
-            other_opened_jobs = serialized_job_info['other_opened_jobs']
+            other_opened_jobs = serialized_job_info["other_opened_jobs"]
             # remove origin job from database as it doesn't have other jobs opened
             if not len(other_opened_jobs):
                 remove_job_from_db(job_controller, job_url)
             else:
                 currently_available_jobs.append(job_url)
                 for job in other_opened_jobs:
-                    currently_available_jobs.append(job['job_url'])
+                    currently_available_jobs.append(job["job_url"])
 
-                new_job_openings = find_new_job_openings(job_controller, other_opened_jobs)
+                new_job_openings = find_new_job_openings(
+                    job_controller, other_opened_jobs
+                )
                 if len(new_job_openings):
                     # new job openings appeared for origin one
-                    serialized_job_info['other_opened_jobs'] = new_job_openings
+                    serialized_job_info["other_opened_jobs"] = new_job_openings
                     serialized_job_info["job_title"] = job_title
                     jobs.append(serialized_job_info)
         except CustomException as exc:
@@ -99,36 +107,36 @@ def run():
     # if client doesn't have a job or some jobs anymore remove it from DB
     remove_unavailable_jobs_from_db(job_controller, currently_available_jobs)
     if jobs:
-        blocks=[
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": "Hi! I have new job openings for you :eyes:",
-                    },
-                }
-            ]
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": "Hi! I have new job openings for you :eyes:",
+                },
+            }
+        ]
         modal_window = {
-                        "type": "actions",
-                        "elements": [
-                            {
-                                "type": "button",
-                                "action_id": "modal_window_handler",
-                                "text": {"type": "plain_text", "text": "Watch them"},
-                                "style": "primary",
-                            }
-                        ]
-                    }
+            "type": "actions",
+            "elements": [
+                {
+                    "type": "button",
+                    "action_id": "modal_window_handler",
+                    "text": {"type": "plain_text", "text": "Watch them"},
+                    "style": "primary",
+                }
+            ],
+        }
         if len(str(jobs)) > 2000:
             delete_jobs_from_env_file()
             dotenv.set_key(level_up_directory_path + "/.env", "JOBS", str(jobs))
         else:
-            modal_window['elements'][0]['value'] = str(jobs)
+            modal_window["elements"][0]["value"] = str(jobs)
         blocks.append(modal_window)
         slack_bot_app.client.chat_postMessage(
-            channel=os.getenv("SLACK_CHANNEL_ID"),
-            blocks=blocks
+            channel=os.getenv("SLACK_CHANNEL_ID"), blocks=blocks
         )
+
 
 run()
 sys.path.pop(0)
