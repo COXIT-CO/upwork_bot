@@ -5,7 +5,7 @@ import upwork
 import validators
 from upwork.routers import auth
 from upwork.routers.jobs import profile
-from . import exceptions
+from helpers import exceptions
 
 LOGGER = logging.getLogger()
 
