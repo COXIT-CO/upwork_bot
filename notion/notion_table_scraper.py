@@ -26,7 +26,7 @@ def get_projects_titles_and_urls(database_id: str):
     DB.find_all_page(database_id=database_id)
 
     if "results" not in DB.result:
-        raise CustomException("You have provided invalid notion token!")
+        raise CustomException("You have provided invalid notion token or notion table url is valid!")
     for page in DB.result["results"]:
         try:
             project_title = page["properties"]["Project Name"]["title"][0]["text"][
