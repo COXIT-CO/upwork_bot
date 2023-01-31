@@ -28,4 +28,4 @@ if __name__ == "__main__":
     with flask_app.app_context():
         DB.create_all()
 
-    flask_app.run()
+    flask_app.run(port=8000)
