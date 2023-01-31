@@ -19,8 +19,7 @@ def handle_subscription(notion_table_url):
         projects_data = scrape_notion_table(notion_table_url)
     except exceptions.CustomException as exc:
         slack_bot_app.client.chat_postMessage(
-            channel=os.getenv("SLACK_CHANNEL_ID"),
-            text=str(exc)
+            channel=os.getenv("SLACK_CHANNEL_ID"), text=str(exc)
         )
         return ""
     setup_cron_job()
