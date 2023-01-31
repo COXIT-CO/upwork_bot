@@ -85,8 +85,8 @@ def setup_cron_job():
 def subscribe(ack, body):
     channel_id = body["channel_id"]
     notion_table_url = body["text"]  # extract notion table url provided by user
-    os.environ['SLACK_CHANNEL_ID'] = channel_id
-    os.environ['NOTION_TABLE_URL'] = notion_table_url
+    os.environ["SLACK_CHANNEL_ID"] = channel_id
+    os.environ["NOTION_TABLE_URL"] = notion_table_url
     dotenv.set_key(".env", "SLACK_CHANNEL_ID", channel_id)
     dotenv.set_key(".env", "NOTION_TABLE_URL", notion_table_url)
     threading.Thread(target=handle_subscription, args=(notion_table_url,)).start()
