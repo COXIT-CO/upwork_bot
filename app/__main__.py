@@ -1,14 +1,6 @@
 if __name__ == "__main__":
-
     import dotenv
     from . import args_parser
-
-    # print(args_parser.args.client_id)
-    # print(args_parser.args.client_secret)
-    # print(args_parser.args.refresh_token)
-    # print(args_parser.args.slack_bot_token)
-    # print(args_parser.args.slack_signing_secret)
-    # print(args_parser.args.notion_token)
 
     dotenv.set_key(".env", "CLIENT_ID", args_parser.args.client_id)
     dotenv.set_key(".env", "CLIENT_SECRET", args_parser.args.client_secret)
