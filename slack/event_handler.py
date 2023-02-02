@@ -22,7 +22,7 @@ def handle_subscription(notion_table_url):
             channel=os.getenv("SLACK_CHANNEL_ID"), text=str(exc)
         )
         return ""
-    setup_cron_job()
+    setup_cron_jobs()
     jobs = []
     for job_data in projects_data:
         job_url = job_data["url"]
@@ -73,12 +73,20 @@ def save_jobs_to_db(serialized_job_data):
             job_controller.create(job_data["job_url"])
 
 
-def setup_cron_job():
+def setup_cron_jobs():
     subprocess.Popen(["crontab", "-r"])
     current_directory_path = os.path.dirname(os.path.abspath(__file__))
     level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-    cmd = f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
-    subprocess.Popen("echo '0 */6 * * * {}' | crontab -".format(cmd), shell=True)
+    job_openings_cron_job = (
+        f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
+    )
+    token_refresh_cron_job = (
+        f"python {level_up_directory_path}/cron-jobs/cron_refresh_token.py"
+    )
+    cron_jobs = (
+        f"0 */6 * * * {job_openings_cron_job}\n0 0 */13 * * {token_refresh_cron_job}"
+    )
+    subprocess.Popen(f"echo '{cron_jobs}' | crontab -", shell=True)
 
 
 @slack_bot_app.command("/subscribe")
