@@ -100,7 +100,7 @@ def run():
                     jobs.append(serialized_job_info)
         except exceptions.CustomException as exc:
             slack_bot_app.client.chat_postMessage(
-                channel=os.getenv("CHANNEL_ID"),
+                channel=os.getenv("SLACK_CHANNEL_ID"),
                 text=str(exc),
             )
 
