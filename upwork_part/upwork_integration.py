@@ -5,6 +5,16 @@ import upwork
 import validators
 from upwork.routers import auth
 from upwork.routers.jobs import profile
+import os
+
+current_directory_path = os.path.dirname(os.path.abspath(__file__))
+level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
+import dotenv
+
+dotenv.load_dotenv(level_up_directory_path + "/.env")
+import sys
+
+sys.path.insert(0, level_up_directory_path)
 from helpers import exceptions
 
 LOGGER = logging.getLogger()
@@ -91,6 +101,25 @@ class UpworkClient:
             self.__client_id, self.__client_secret, self.__access_token_data
         )
 
+    def update_token_data(self, token_data):
+        print(token_data)
+        """
+        function invoked when refresh token expires, so we pass new token data to asign it to upwork client object
+        :param token_data: looks like this 
+        {
+            'access_token': <access_token>,
+            'expires_at': 1234567890.12345,
+            'expires_in': 86400,
+            'refresh_token': <refresh_token>,
+            'token_type': 'Bearer'
+        }
+        """
+        # update access token data and upwork client
+        self.__access_token_data = token_data
+        self.__client = self.get_upwork_client(
+            self.__client_id, self.__client_secret, self.__access_token_data
+        )
+
     def receive_upwork_client(self):
         return self.__client
 
@@ -150,6 +179,10 @@ class Job:
         """from passed job content-holding dict extract keys of other opened jobs and using upwork client make requests to get job content-holding dict and extract job title for each such job"""
         other_opened_jobs = []  # list of Job objects
         upwork_job_generic_url = "https://www.upwork.com/jobs/"
+
+        if not job_data["profile"]["op_other_jobs"]:
+            self.__other_opened_jobs = []
+            return ""
         other_opened_jobs_data = job_data["profile"]["op_other_jobs"]["op_other_job"]
         if len(other_opened_jobs_data) == 1:
             # client has only one other job
