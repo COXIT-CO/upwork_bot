@@ -17,3 +17,19 @@ class Job(DB.Model):
     def delete(self):
         DB.session.delete(self)
         DB.session.commit()
+
+
+class Invitation(DB.Model):
+
+    __tablename__ = "invitations"
+
+    id = DB.Column(DB.Integer, primary_key=True)
+    url = DB.Column(DB.String(70), unique=True)
+
+    def save(self):
+        DB.session.add(self)
+        DB.session.commit()
+
+    def delete(self):
+        DB.session.delete(self)
+        DB.session.commit()
