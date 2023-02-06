@@ -7,7 +7,7 @@ from app.app import flask_app
 from helpers import exceptions
 from notion.notion_table_scraper import scrape_notion_table
 from slack.app import slack_bot_app
-from slack.utils import build_blocks_given_job_openings
+from slack.utils import build_blocks_given_job_openings, build_blocks_given_invitations
 from upwork_part.schema.controllers import JobController
 from upwork_part.upwork_integration import Job
 from upwork_part.upwork_integration import upwork_client
@@ -73,19 +73,18 @@ def save_jobs_to_db(serialized_job_data):
             job_controller.create(job_data["job_url"])
 
 
-def setup_cron_jobs():
+def setup_cron_jobs(level_up_directory_path):
     subprocess.Popen(["crontab", "-r"])
-    current_directory_path = os.path.dirname(os.path.abspath(__file__))
-    level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
     job_openings_cron_job = (
         f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
     )
     token_refresh_cron_job = (
         f"python {level_up_directory_path}/cron-jobs/cron_refresh_token.py"
     )
-    cron_jobs = (
-        f"0 */6 * * * {job_openings_cron_job}\n0 0 */13 * * {token_refresh_cron_job}"
+    invites_cron_job = (
+        f"python {level_up_directory_path}/cron-jobs/cron_job_invitations.py"
     )
+    cron_jobs = f"* * * * * {job_openings_cron_job}\n0 0 */13 * * {token_refresh_cron_job}\n* * * * * {invites_cron_job}"
     subprocess.Popen(f"echo '{cron_jobs}' | crontab -", shell=True)
 
 
@@ -97,12 +96,22 @@ def subscribe(ack, body):
     os.environ["NOTION_TABLE_URL"] = notion_table_url
     dotenv.set_key(".env", "SLACK_CHANNEL_ID", channel_id)
     dotenv.set_key(".env", "NOTION_TABLE_URL", notion_table_url)
-    threading.Thread(target=handle_subscription, args=(notion_table_url,)).start()
+    current_directory_path = os.path.dirname(os.path.abspath(__file__))
+    level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
+    subprocess.Popen(
+        f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py", shell=True
+    )
+    subprocess.Popen(
+        f"python {level_up_directory_path}/cron-jobs/cron_job_invitations.py",
+        shell=True,
+    )
+    setup_cron_jobs(level_up_directory_path)
+    # threading.Thread(target=handle_subscription, args=(notion_table_url,)).start()
     ack()
 
 
 @slack_bot_app.action("modal_window_handler")
-def handle_some_action(ack, body, payload, client):
+def handle_job_openings(ack, body, payload, client):
     ack()
     if "value" in payload:
         jobs_to_list = ast.literal_eval(payload["value"])
@@ -115,5 +124,20 @@ def handle_some_action(ack, body, payload, client):
             "callback_id": "modal_window_callback",
             "title": {"type": "plain_text", "text": "New job openings"},
             "blocks": build_blocks_given_job_openings(jobs_to_list),
+        },
+    )
+
+
+@slack_bot_app.action("invitations_handler")
+def handle_invitations(ack, body, client, payload):
+    ack()
+    invitations = ast.literal_eval(payload["value"])
+    client.views_open(
+        trigger_id=body["trigger_id"],
+        view={
+            "type": "modal",
+            "callback_id": "invitations_callback",
+            "title": {"type": "plain_text", "text": "New invitations"},
+            "blocks": build_blocks_given_invitations(invitations),
         },
     )
