@@ -64,7 +64,6 @@ def remove_job_from_db(job_controller: JobController, job_url: str):
 
 
 def run():
-    # refresh access token to be sure request to Upwork API can be sent
     upwork_client.refresh_access_token_data()
 
     projects_data = scrape_notion_table(os.getenv("NOTION_TABLE_URL"))
@@ -73,17 +72,16 @@ def run():
     currently_available_jobs = []
     for job_data in projects_data:
         job_url = job_data["url"]
-        with flask_app.app_context():
-            job_controller.create(job_url)
         job_title = job_data["title"]
         try:
             job = Job(job_url).get_job(
                 upwork_client.receive_upwork_client()
             )  # line potentially causing error
             serialized_job_info = job.serialize_job()
+            serialized_job_info["job_title"] = job_title
             other_opened_jobs = serialized_job_info["other_opened_jobs"]
             # remove origin job from database as it doesn't have other jobs opened
-            if not len(other_opened_jobs):
+            if len(other_opened_jobs) == 0:
                 remove_job_from_db(job_controller, job_url)
             else:
                 currently_available_jobs.append(job_url)
@@ -96,7 +94,6 @@ def run():
                 if len(new_job_openings):
                     # new job openings appeared for origin one
                     serialized_job_info["other_opened_jobs"] = new_job_openings
-                    serialized_job_info["job_title"] = job_title
                     jobs.append(serialized_job_info)
         except exceptions.CustomException as exc:
             slack_bot_app.client.chat_postMessage(
@@ -112,7 +109,7 @@ def run():
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": "Hi! I have new job openings for you :eyes:",
+                    "text": "Hey! I have new job openings for you :eyes:",
                 },
             }
         ]
