@@ -1,5 +1,6 @@
 import ast
-import dotenv
+
+# import dotenv
 import os
 import subprocess
 import threading
@@ -38,7 +39,8 @@ def handle_subscription(notion_table_url):
                 channel=os.getenv("CHANNEL_ID"),
                 text=str(exc),
             )
-    dotenv.set_key(".env", "JOBS", str(jobs))
+    # dotenv.set_key(".env", "JOBS", str(jobs))
+    os.environ["JOBS"] = str(jobs)
     slack_bot_app.client.chat_postMessage(
         channel=os.getenv("SLACK_CHANNEL_ID"),
         blocks=[
@@ -78,13 +80,7 @@ def setup_cron_jobs(level_up_directory_path):
     job_openings_cron_job = (
         f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
     )
-    token_refresh_cron_job = (
-        f"python {level_up_directory_path}/cron-jobs/cron_refresh_token.py"
-    )
-    invites_cron_job = (
-        f"python {level_up_directory_path}/cron-jobs/cron_job_invitations.py"
-    )
-    cron_jobs = f"* * * * * {job_openings_cron_job}\n0 0 */13 * * {token_refresh_cron_job}\n* * * * * {invites_cron_job}"
+    cron_jobs = f"* * * * * {job_openings_cron_job}\n"
     subprocess.Popen(f"echo '{cron_jobs}' | crontab -", shell=True)
 
 
@@ -92,19 +88,21 @@ def setup_cron_jobs(level_up_directory_path):
 def subscribe(ack, body):
     channel_id = body["channel_id"]
     notion_table_url = body["text"]  # extract notion table url provided by user
+    # os.environ["SLACK_CHANNEL_ID"] = channel_id
+    # os.environ["NOTION_TABLE_URL"] = notion_table_url
+    # dotenv.set_key(".env", "SLACK_CHANNEL_ID", channel_id)
+    # dotenv.set_key(".env", "NOTION_TABLE_URL", notion_table_url)
     os.environ["SLACK_CHANNEL_ID"] = channel_id
     os.environ["NOTION_TABLE_URL"] = notion_table_url
-    dotenv.set_key(".env", "SLACK_CHANNEL_ID", channel_id)
-    dotenv.set_key(".env", "NOTION_TABLE_URL", notion_table_url)
     current_directory_path = os.path.dirname(os.path.abspath(__file__))
     level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
     subprocess.Popen(
         f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py", shell=True
     )
-    subprocess.Popen(
-        f"python {level_up_directory_path}/cron-jobs/cron_job_invitations.py",
-        shell=True,
-    )
+    # subprocess.Popen(
+    #     f"python {level_up_directory_path}/cron-jobs/cron_job_invitations.py",
+    #     shell=True,
+    # )
     setup_cron_jobs(level_up_directory_path)
     # threading.Thread(target=handle_subscription, args=(notion_table_url,)).start()
     ack()

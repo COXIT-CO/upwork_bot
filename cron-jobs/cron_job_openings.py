@@ -2,9 +2,9 @@ import os
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-import dotenv
+# import dotenv
 
-dotenv.load_dotenv(level_up_directory_path + "/.env")
+# dotenv.load_dotenv(level_up_directory_path + "/.env")
 import sys
 
 sys.path.insert(0, level_up_directory_path)
@@ -126,7 +126,8 @@ def run():
         }
         if len(str(jobs)) > 2000:
             delete_jobs_from_env_file()
-            dotenv.set_key(level_up_directory_path + "/.env", "JOBS", str(jobs))
+            os.environ["JOBS"] = str(jobs)
+            # dotenv.set_key(level_up_directory_path + "/.env", "JOBS", str(jobs))
         else:
             modal_window["elements"][0]["value"] = str(jobs)
         blocks.append(modal_window)
