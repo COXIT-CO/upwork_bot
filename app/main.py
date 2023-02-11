@@ -5,7 +5,8 @@ import logging
 
 from flask import request, Response
 from ..slack.schema.controllers import ClientController, JobController, URL
-from config_parser import configuration
+
+# from config_parser import configuration
 from ..upwork.upwork_integration import get_job
 from logging.config import dictConfig
 from log import LOG_CONFIG

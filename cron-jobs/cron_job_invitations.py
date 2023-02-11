@@ -2,9 +2,9 @@ import os
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-import dotenv
+# import dotenv
 
-dotenv.load_dotenv(level_up_directory_path + "/.env")
+# dotenv.load_dotenv(level_up_directory_path + "/.env")
 import sys
 
 sys.path.insert(0, level_up_directory_path)

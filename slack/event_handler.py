@@ -76,12 +76,19 @@ def save_jobs_to_db(serialized_job_data):
 
 
 def setup_cron_jobs(level_up_directory_path):
-    subprocess.Popen(["crontab", "-r"])
-    job_openings_cron_job = (
-        f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
-    )
-    cron_jobs = f"* * * * * {job_openings_cron_job}\n"
-    subprocess.Popen(f"echo '{cron_jobs}' | crontab -", shell=True)
+    # # subprocess.Popen(["crontab", "-r"])
+    # job_openings_cron_job = (
+    #     f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
+    # )
+    # cron_jobs = f"* * * * * {job_openings_cron_job}\n"
+    # subprocess.Popen(f"echo 'abc' > abc.txt", shell=True)  # {level_up_directory_path}/crontab")
+    subprocess.Popen(f'echo "* * * * * root python {level_up_directory_path}/cron-jobs/test.py\n\
+# Don\'t remove the empty line at the end of this file. It is required to run the cron job" > /etc/cron.d/hello-cron', shell=True)
+    subprocess.Popen("crontab -f", shell=True)
+#     subprocess.Popen(f'echo "* * * * * root python {level_up_directory_path}/cron-jobs/cron_job_openings.py\n\
+# # Don\'t remove the empty line at the end of this file. It is required to run the cron job" > /etc/cron.d/hello-cron', shell=True)
+#     subprocess.Popen("cron -f", shell=True)
+    # # subprocess.Popen(f"echo '{cron_jobs}' | crontab -", shell=True)
 
 
 @slack_bot_app.command("/subscribe")
@@ -92,18 +99,31 @@ def subscribe(ack, body):
     # os.environ["NOTION_TABLE_URL"] = notion_table_url
     # dotenv.set_key(".env", "SLACK_CHANNEL_ID", channel_id)
     # dotenv.set_key(".env", "NOTION_TABLE_URL", notion_table_url)
-    os.environ["SLACK_CHANNEL_ID"] = channel_id
-    os.environ["NOTION_TABLE_URL"] = notion_table_url
+    # os.environ["SLACK_CHANNEL_ID"] = channel_id
+    # os.environ["NOTION_TABLE_URL"] = notion_table_url
     current_directory_path = os.path.dirname(os.path.abspath(__file__))
     level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-    subprocess.Popen(
-        f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py", shell=True
-    )
+    with open("/app/.env", "w") as file:
+        file.write(f"SLACK_CHANNEL_ID={channel_id}\n")
+        file.write(f"NOTION_TABLE_URL={notion_table_url}\n")
+        file.write(f"SLACK_CHANNEL_ID={os.getenv('SLACK_CHANNEL_ID')}\n")
+        file.write(f"SLACK_SIGNING_SECRET={os.getenv('SLACK_SIGNING_SECRET')}\n")
+        file.write(f"SLACK_BOT_TOKEN={os.getenv('SLACK_BOT_TOKEN')}\n")
+        file.write(f"CLIENT_ID={os.getenv('CLIENT_ID')}\n")
+        file.write(f"CLIENT_SECRET={os.getenv('CLIENT_SECRET')}\n")
+        file.write(f"CLIENT_EMAIL={os.getenv('CLIENT_EMAIL')}\n")
+        file.write(f"CLIENT_PASSWORD={os.getenv('CLIENT_PASSWORD')}\n")
+        file.write(f"REDIRECT_URI={os.getenv('REDIRECT_URI')}\n")
+        file.write(f"NOTION_TOKEN={os.getenv('NOTION_TOKEN')}\n")
+        file.write(f"REFRESH_TOKEN={os.getenv('REFRESH_TOKEN')}\n")
     # subprocess.Popen(
-    #     f"python {level_up_directory_path}/cron-jobs/cron_job_invitations.py",
-    #     shell=True,
+    #     f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py", shell=True
     # )
-    setup_cron_jobs(level_up_directory_path)
+    subprocess.Popen(
+        f"/usr/local/bin/python /app/cron-jobs/cron_job_openings.py",
+        shell=True,
+    )
+    # setup_cron_jobs(level_up_directory_path)
     # threading.Thread(target=handle_subscription, args=(notion_table_url,)).start()
     ack()
 
@@ -114,7 +134,10 @@ def handle_job_openings(ack, body, payload, client):
     if "value" in payload:
         jobs_to_list = ast.literal_eval(payload["value"])
     else:
-        jobs_to_list = ast.literal_eval(os.getenv("JOBS"))
+        with open("/app/jobs", "r") as file:
+            lines = file.readlines()
+        jobs = "".join(lines)[5:]
+        jobs_to_list = ast.literal_eval(jobs)
     client.views_open(
         trigger_id=body["trigger_id"],
         view={

@@ -1,27 +1,57 @@
 import os
+import sys
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-# import dotenv
-
-# dotenv.load_dotenv(level_up_directory_path + "/.env")
-import sys
-
 sys.path.insert(0, level_up_directory_path)
+
+with open("/app/.env", "r") as file:
+    lines = file.readlines()
+
+for line in lines:
+    if "SLACK_CHANNEL_ID" in line:
+        slack_channel_id = lines[0].split("=")[-1][:-1]
+    elif "NOTION_TABLE_URL" in line:
+        notion_table_url = lines[1][17:-1]
+    elif "CLIENT_ID" in line:
+        os.environ['CLIENT_ID'] = line.split("=")[-1][:-1]
+    elif "CLIENT_SECRET" in line:
+        os.environ['CLIENT_SECRET'] = line.split("=")[-1][:-1]
+    elif "CLIENT_EMAIL" in line:
+        os.environ['CLIENT_EMAIL'] = line.split("=")[-1][:-1]
+    elif "CLIENT_PASSWORD" in line:
+        os.environ['CLIENT_PASSWORD'] = line.split("=")[-1][:-1]
+    elif "REDIRECT_URI" in line:
+        os.environ['REDIRECT_URI'] = line.split("=")[-1][:-1]
+    elif "SLACK_BOT_TOKEN" in line:
+        os.environ['SLACK_BOT_TOKEN'] = line.split("=")[-1][:-1]
+    elif "SLACK_SIGNING_SECRET" in line:
+        os.environ['SLACK_SIGNING_SECRET'] = line.split("=")[-1][:-1]
+    elif "NOTION_TOKEN" in line:
+        os.environ['NOTION_TOKEN'] = line.split("=")[-1][:-1]
+    elif "REFRESH_TOKEN" in line:
+        os.environ['REFRESH_TOKEN'] = line.split("=")[-1][:-1]
+
+
 from app.app import flask_app
 from notion.notion_table_scraper import scrape_notion_table
-from slack.app import slack_bot_app
+
 from helpers import exceptions
 from upwork_part.schema.controllers import JobController
 from upwork_part.schema.models import Job as JobModel
 from upwork_part.upwork_integration import Job
 from upwork_part.upwork_integration import upwork_client
 
+from slack_bolt import App
+
+slack_bot_app = App(
+    signing_secret=os.getenv("SLACK_SIGNING_SECRET"), token=os.getenv("SLACK_BOT_TOKEN")
+)
 
 def delete_jobs_from_env_file():
     with open(level_up_directory_path + "/.env", "r") as file:
         lines = file.readlines()
-    with open(level_up_directory_path + "/.env", "w") as file:
+    with open(level_up_directory_path + "/.env", "a") as file:
         for line in lines:
             if "JOBS" not in line:
                 file.write(line)
@@ -63,78 +93,75 @@ def remove_job_from_db(job_controller: JobController, job_url: str):
         job_controller.delete(job_key)
 
 
-def run():
-    upwork_client.refresh_access_token_data()
+upwork_client.refresh_access_token_data()
 
-    projects_data = scrape_notion_table(os.getenv("NOTION_TABLE_URL"))
-    job_controller = JobController()
-    jobs = []
-    currently_available_jobs = []
-    for job_data in projects_data:
-        job_url = job_data["url"]
-        job_title = job_data["title"]
-        try:
-            job = Job(job_url).get_job(
-                upwork_client.receive_upwork_client()
-            )  # line potentially causing error
-            serialized_job_info = job.serialize_job()
-            serialized_job_info["job_title"] = job_title
-            other_opened_jobs = serialized_job_info["other_opened_jobs"]
-            # remove origin job from database as it doesn't have other jobs opened
-            if len(other_opened_jobs) == 0:
-                remove_job_from_db(job_controller, job_url)
-            else:
-                currently_available_jobs.append(job_url)
-                for job in other_opened_jobs:
-                    currently_available_jobs.append(job["job_url"])
-
-                new_job_openings = find_new_job_openings(
-                    job_controller, other_opened_jobs
-                )
-                if len(new_job_openings):
-                    # new job openings appeared for origin one
-                    serialized_job_info["other_opened_jobs"] = new_job_openings
-                    jobs.append(serialized_job_info)
-        except exceptions.CustomException as exc:
-            slack_bot_app.client.chat_postMessage(
-                channel=os.getenv("SLACK_CHANNEL_ID"),
-                text=str(exc),
-            )
-
-    # if client doesn't have a job or some jobs anymore remove it from DB
-    remove_unavailable_jobs_from_db(job_controller, currently_available_jobs)
-    if jobs:
-        blocks = [
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
-                    "text": "Hey! I have new job openings for you :eyes:",
-                },
-            }
-        ]
-        modal_window = {
-            "type": "actions",
-            "elements": [
-                {
-                    "type": "button",
-                    "action_id": "modal_window_handler",
-                    "text": {"type": "plain_text", "text": "Watch them"},
-                    "style": "primary",
-                }
-            ],
-        }
-        if len(str(jobs)) > 2000:
-            delete_jobs_from_env_file()
-            os.environ["JOBS"] = str(jobs)
-            # dotenv.set_key(level_up_directory_path + "/.env", "JOBS", str(jobs))
+projects_data = scrape_notion_table(notion_table_url)
+job_controller = JobController()
+jobs = []
+currently_available_jobs = []
+for job_data in projects_data:
+    job_url = job_data["url"]
+    job_title = job_data["title"]
+    try:
+        job = Job(job_url).get_job(
+            upwork_client.receive_upwork_client()
+        )  # line potentially causing error
+        serialized_job_info = job.serialize_job()
+        serialized_job_info["job_title"] = job_title
+        other_opened_jobs = serialized_job_info["other_opened_jobs"]
+        # remove origin job from database as it doesn't have other jobs opened
+        if len(other_opened_jobs) == 0:
+            remove_job_from_db(job_controller, job_url)
         else:
-            modal_window["elements"][0]["value"] = str(jobs)
-        blocks.append(modal_window)
+            currently_available_jobs.append(job_url)
+            for job in other_opened_jobs:
+                currently_available_jobs.append(job["job_url"])
+
+            new_job_openings = find_new_job_openings(
+                job_controller, other_opened_jobs
+            )
+            if len(new_job_openings):
+                # new job openings appeared for origin one
+                serialized_job_info["other_opened_jobs"] = new_job_openings
+                jobs.append(serialized_job_info)
+    except exceptions.CustomException as exc:
         slack_bot_app.client.chat_postMessage(
-            channel=os.getenv("SLACK_CHANNEL_ID"), blocks=blocks
+            channel=slack_channel_id,
+            text=str(exc),
         )
 
+# if client doesn't have a job or some jobs anymore remove it from DB
+remove_unavailable_jobs_from_db(job_controller, currently_available_jobs)
+if jobs:
+    blocks = [
+        {
+            "type": "section",
+            "text": {
+                "type": "mrkdwn",
+                "text": "Hey! I have new job openings for you :eyes:",
+            },
+        }
+    ]
+    modal_window = {
+        "type": "actions",
+        "elements": [
+            {
+                "type": "button",
+                "action_id": "modal_window_handler",
+                "text": {"type": "plain_text", "text": "Watch them"},
+                "style": "primary",
+            }
+        ],
+    }
+    if len(str(jobs)) > 2000:
+        delete_jobs_from_env_file()
+        with open("/app/jobs", "w") as file:
+            file.write(f"JOBS={str(jobs)}")
+    else:
+        modal_window["elements"][0]["value"] = str(jobs)
+    blocks.append(modal_window)
+    slack_bot_app.client.chat_postMessage(
+        channel=slack_channel_id, blocks=blocks
+    )
 
-run()
 sys.path.pop(0)

@@ -1,0 +1,12 @@
+# Updates every 15 minutes.
+# * * * * * root echo "Hello world" >> /var/log/cron.log 2>&1
+# Don't remove the empty line at the end of this file. It is required to run the cron job
+# * * * * * root echo `python /app/test.py` >> /var/log/cron.log 2>&1
+# Don't remove the empty line at the end of this file. It is required to run the cron job
+# * * * * * root /usr/local/bin/python /app/test.py
+# Don't remove the empty line at the end of this file. It is required to run the cron job
+0 */6 * * * root /usr/local/bin/python /app/cron-jobs/cron_job_openings.py
+# Don't remove the empty line at the end of this file. It is required to run the cron job
+# * * * * * root /usr/bin/sh /app/run.sh
+# * * * * * python /app/test.py
+# Don't remove the empty line at the end of this file. It is required to run the cron job

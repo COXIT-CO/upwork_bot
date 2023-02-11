@@ -1,11 +1,11 @@
-import dotenv
+# import dotenv
 import os
 import sys
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 sys.path.insert(0, level_up_directory_path)
-dotenv.load_dotenv(level_up_directory_path + "/.env", override=True)
+# dotenv.load_dotenv(level_up_directory_path + "/.env", override=True)
 import upwork
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -73,9 +73,11 @@ with open(level_up_directory_path + "/.env", "w") as file:
         if "REFRESH_TOKEN" not in line:
             file.write(line)
 
-dotenv.set_key(
-    level_up_directory_path + "/.env", "REFRESH_TOKEN", token_data["refresh_token"]
-)
+# dotenv.set_key(
+#     level_up_directory_path + "/.env", "REFRESH_TOKEN", token_data["refresh_token"]
+# )
+
+os.environ["REFRESH_TOKEN"] = token_data["refresh_token"]
 
 # Close the browser
 driver.quit()
