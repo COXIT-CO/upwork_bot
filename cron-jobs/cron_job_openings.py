@@ -1,60 +1,62 @@
+import ast
 import os
 import sys
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
+
 sys.path.insert(0, level_up_directory_path)
 
-with open("/app/.env", "r") as file:
+with open(level_up_directory_path + "/.env", "r") as file:
     lines = file.readlines()
 
 for line in lines:
     if "SLACK_CHANNEL_ID" in line:
-        slack_channel_id = lines[0].split("=")[-1][:-1]
+        channels = ast.literal_eval(line.split("=")[-1][:-1])
     elif "NOTION_TABLE_URL" in line:
-        notion_table_url = lines[1][17:-1]
+        notion_table_url = line[17:-1]
     elif "CLIENT_ID" in line:
-        os.environ['CLIENT_ID'] = line.split("=")[-1][:-1]
+        os.environ["CLIENT_ID"] = line.split("=")[-1][:-1]
     elif "CLIENT_SECRET" in line:
-        os.environ['CLIENT_SECRET'] = line.split("=")[-1][:-1]
+        os.environ["CLIENT_SECRET"] = line.split("=")[-1][:-1]
     elif "CLIENT_EMAIL" in line:
-        os.environ['CLIENT_EMAIL'] = line.split("=")[-1][:-1]
+        os.environ["CLIENT_EMAIL"] = line.split("=")[-1][:-1]
     elif "CLIENT_PASSWORD" in line:
-        os.environ['CLIENT_PASSWORD'] = line.split("=")[-1][:-1]
+        os.environ["CLIENT_PASSWORD"] = line.split("=")[-1][:-1]
     elif "REDIRECT_URI" in line:
-        os.environ['REDIRECT_URI'] = line.split("=")[-1][:-1]
+        os.environ["REDIRECT_URI"] = line.split("=")[-1][:-1]
     elif "SLACK_BOT_TOKEN" in line:
-        os.environ['SLACK_BOT_TOKEN'] = line.split("=")[-1][:-1]
+        os.environ["SLACK_BOT_TOKEN"] = line.split("=")[-1][:-1]
     elif "SLACK_SIGNING_SECRET" in line:
-        os.environ['SLACK_SIGNING_SECRET'] = line.split("=")[-1][:-1]
+        os.environ["SLACK_SIGNING_SECRET"] = line.split("=")[-1][:-1]
     elif "NOTION_TOKEN" in line:
-        os.environ['NOTION_TOKEN'] = line.split("=")[-1][:-1]
+        os.environ["NOTION_TOKEN"] = line.split("=")[-1][:-1]
     elif "REFRESH_TOKEN" in line:
-        os.environ['REFRESH_TOKEN'] = line.split("=")[-1][:-1]
+        os.environ["REFRESH_TOKEN"] = line.split("=")[-1][:-1]
 
 
 from app.app import flask_app
-from notion.notion_table_scraper import scrape_notion_table
-
 from helpers import exceptions
+from slack_bolt import App
+from notion.notion_table_scraper import scrape_notion_table
 from upwork_part.schema.controllers import JobController
 from upwork_part.schema.models import Job as JobModel
 from upwork_part.upwork_integration import Job
 from upwork_part.upwork_integration import upwork_client
 
-from slack_bolt import App
-
 slack_bot_app = App(
     signing_secret=os.getenv("SLACK_SIGNING_SECRET"), token=os.getenv("SLACK_BOT_TOKEN")
 )
 
+
 def delete_jobs_from_env_file():
     with open(level_up_directory_path + "/.env", "r") as file:
         lines = file.readlines()
-    with open(level_up_directory_path + "/.env", "a") as file:
-        for line in lines:
-            if "JOBS" not in line:
-                file.write(line)
+
+    filtered_lines = [line for line in lines if "JOBS" not in line]
+
+    with open(level_up_directory_path + "/.env", "w") as file:
+        file.writelines(filtered_lines)
 
 
 def find_new_job_openings(job_controller, opened_jobs):
@@ -117,18 +119,17 @@ for job_data in projects_data:
             for job in other_opened_jobs:
                 currently_available_jobs.append(job["job_url"])
 
-            new_job_openings = find_new_job_openings(
-                job_controller, other_opened_jobs
-            )
+            new_job_openings = find_new_job_openings(job_controller, other_opened_jobs)
             if len(new_job_openings):
                 # new job openings appeared for origin one
                 serialized_job_info["other_opened_jobs"] = new_job_openings
                 jobs.append(serialized_job_info)
     except exceptions.CustomException as exc:
-        slack_bot_app.client.chat_postMessage(
-            channel=slack_channel_id,
-            text=str(exc),
-        )
+        for chan in channels:
+            slack_bot_app.client.chat_postMessage(
+                channel=chan,
+                text=str(exc),
+            )
 
 # if client doesn't have a job or some jobs anymore remove it from DB
 remove_unavailable_jobs_from_db(job_controller, currently_available_jobs)
@@ -155,13 +156,12 @@ if jobs:
     }
     if len(str(jobs)) > 2000:
         delete_jobs_from_env_file()
-        with open("/app/jobs", "w") as file:
-            file.write(f"JOBS={str(jobs)}")
+        with open(level_up_directory_path + "/.env", "w") as file:
+            file.write(f"JOBS={str(jobs)}\n")
     else:
         modal_window["elements"][0]["value"] = str(jobs)
     blocks.append(modal_window)
-    slack_bot_app.client.chat_postMessage(
-        channel=slack_channel_id, blocks=blocks
-    )
+    for chan in channels:
+        slack_bot_app.client.chat_postMessage(channel=chan, blocks=blocks)
 
 sys.path.pop(0)

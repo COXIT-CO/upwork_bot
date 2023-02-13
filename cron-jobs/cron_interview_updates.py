@@ -1,26 +1,39 @@
+import ast
 import os
+import sys
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-# import dotenv
-
-# dotenv.load_dotenv(level_up_directory_path + "/.env")
-import sys
 
 sys.path.insert(0, level_up_directory_path)
+
+with open(f"{level_up_directory_path}/.env", "r") as file:
+    lines = file.readlines()
+
+for line in lines:
+    if "SLACK_CHANNEL_ID" in line:
+        channels = ast.literal_eval(line.split("=")[-1][:-1])
+    elif "CLIENT_EMAIL" in line:
+        os.environ["CLIENT_EMAIL"] = line.split("=")[-1][:-1]
+    elif "CLIENT_PASSWORD" in line:
+        os.environ["CLIENT_PASSWORD"] = line.split("=")[-1][:-1]
+    elif "SLACK_BOT_TOKEN" in line:
+        os.environ["SLACK_BOT_TOKEN"] = line.split("=")[-1][:-1]
+    elif "SLACK_SIGNING_SECRET" in line:
+        os.environ["SLACK_SIGNING_SECRET"] = line.split("=")[-1][:-1]
+
+from app.app import flask_app
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from slack.app import slack_bot_app
-from upwork_part.schema.models import Invitation
 from upwork_part.schema.controllers import InvitationController
-from app.app import flask_app
-
-from bs4 import BeautifulSoup
+from upwork_part.schema.models import Invitation
+from webdriver_manager.chrome import ChromeDriverManager
 
 invitation_controller = InvitationController()
 
@@ -54,11 +67,14 @@ def remove_unavailable_invitations_from_db(invitation_controller, invitations):
                 invitation_controller.delete(inv_db_link)
 
 
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
+
 chrome_options = Options()
 chrome_options.add_argument("--headless")
-chrome_options.add_argument(
-    "--user-agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'"
-)
+chrome_options.add_argument("--disable-gpu")
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+chrome_options.add_argument(f"--user-agent={USER_AGENT}")
 
 driver = webdriver.Chrome(
     ChromeDriverManager().install(), chrome_options=chrome_options
@@ -68,7 +84,7 @@ driver.get("https://www.upwork.com/ab/proposals/")
 
 # Find the email form element and fill it in
 email = driver.find_element(By.ID, "login_username")
-email.send_keys("vladyslav.snisar@coxit.co")
+email.send_keys(os.getenv("CLIENT_EMAIL"))
 email.send_keys(Keys.RETURN)
 
 # # Find the next button and click it
@@ -80,7 +96,7 @@ password_field = WebDriverWait(driver, 30).until(
 )
 
 password = driver.find_element(By.ID, "login_password")
-password.send_keys("RJb_97sMw")
+password.send_keys(os.getenv("CLIENT_PASSWORD"))
 
 next_button_2 = driver.find_element(By.ID, "login_control_continue")
 next_button_2.click()
@@ -132,8 +148,7 @@ blocks = [
 ]
 
 if len(new_invitations) != 0:
-    slack_bot_app.client.chat_postMessage(
-        channel=os.getenv("SLACK_CHANNEL_ID"), blocks=blocks
-    )
+    for chan in channels:
+        slack_bot_app.client.chat_postMessage(channel=chan, blocks=blocks)
 
 sys.path.pop(0)
