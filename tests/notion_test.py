@@ -6,7 +6,6 @@ level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 import sys
 
 sys.path.append(level_up_directory_path)
-print(sys.path)
 from ..notion.notion_table_scraper import is_database_id_valid, get_database_id_from_url
 
 
