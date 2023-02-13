@@ -11,17 +11,21 @@ def scrape_notion_table(notion_page_url: str):
         database_id = get_database_id_from_url(notion_page_url)
         if is_database_id_valid(database_id):
             # return list with projects urls or None that is converted to False
-            return get_projects_urls(database_id)
+            return get_projects_titles_and_urls(database_id)
 
 
-def get_projects_urls(database_id: str):
+def get_projects_titles_and_urls(database_id: str):
     """given database id extract all projects urls from table"""
     projects_urls = []
     DB = Database(integrations_token=os.getenv("NOTION_TOKEN"))
     DB.retrieve_database(database_id=database_id)
     DB.find_all_page(database_id=database_id)
     for page in DB.result["results"]:
-        projects_urls.append(page["properties"]["Link"]["url"])
+        project_title = page["properties"]["Project Name"]["title"][0]["text"][
+            "content"
+        ]
+        project_url = page["properties"]["Link"]["url"]
+        projects_urls.append({"url": project_url, "title": project_title})
 
     return projects_urls
 
