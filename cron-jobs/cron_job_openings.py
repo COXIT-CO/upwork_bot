@@ -11,7 +11,7 @@ sys.path.insert(0, level_up_directory_path)
 from app.app import flask_app
 from notion.notion_table_scraper import scrape_notion_table
 from slack.app import slack_bot_app
-from upwork_part.exceptions import CustomException
+from helpers import exceptions
 from upwork_part.schema.controllers import JobController
 from upwork_part.schema.models import Job as JobModel
 from upwork_part.upwork_integration import Job
@@ -98,9 +98,9 @@ def run():
                     serialized_job_info["other_opened_jobs"] = new_job_openings
                     serialized_job_info["job_title"] = job_title
                     jobs.append(serialized_job_info)
-        except CustomException as exc:
+        except exceptions.CustomException as exc:
             slack_bot_app.client.chat_postMessage(
-                channel=os.getenv("CHANNEL_ID"),
+                channel=os.getenv("SLACK_CHANNEL_ID"),
                 text=str(exc),
             )
 

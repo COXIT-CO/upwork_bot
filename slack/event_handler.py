@@ -4,10 +4,10 @@ import os
 import subprocess
 import threading
 from app.app import flask_app
+from helpers import exceptions
 from notion.notion_table_scraper import scrape_notion_table
 from slack.app import slack_bot_app
 from slack.utils import build_blocks_given_job_openings
-from upwork_part.exceptions import CustomException
 from upwork_part.schema.controllers import JobController
 from upwork_part.upwork_integration import Job
 from upwork_part.upwork_integration import upwork_client
@@ -15,7 +15,14 @@ from upwork_part.upwork_integration import upwork_client
 
 def handle_subscription(notion_table_url):
     """event handler to user subscription"""
-    projects_data = scrape_notion_table(notion_table_url)
+    try:
+        projects_data = scrape_notion_table(notion_table_url)
+    except exceptions.CustomException as exc:
+        slack_bot_app.client.chat_postMessage(
+            channel=os.getenv("SLACK_CHANNEL_ID"), text=str(exc)
+        )
+        return ""
+    setup_cron_jobs()
     jobs = []
     for job_data in projects_data:
         job_url = job_data["url"]
@@ -26,7 +33,7 @@ def handle_subscription(notion_table_url):
             save_jobs_to_db(serialized_job_info)
             serialized_job_info["job_title"] = job_title
             jobs.append(serialized_job_info)
-        except CustomException as exc:
+        except exceptions.CustomException as exc:
             slack_bot_app.client.chat_postMessage(
                 channel=os.getenv("CHANNEL_ID"),
                 text=str(exc),
@@ -66,19 +73,28 @@ def save_jobs_to_db(serialized_job_data):
             job_controller.create(job_data["job_url"])
 
 
-@slack_bot_app.command("/subscribe")
-def subscribe(ack, body):
-    channel_id = body["channel_id"]
-    dotenv.set_key(".env", "SLACK_CHANNEL_ID", channel_id)
-
+def setup_cron_jobs():
     subprocess.Popen(["crontab", "-r"])
     current_directory_path = os.path.dirname(os.path.abspath(__file__))
     level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-    cmd = f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
-    subprocess.Popen("echo '* * * * * {}' | crontab -".format(cmd), shell=True)
+    job_openings_cron_job = (
+        f"python {level_up_directory_path}/cron-jobs/cron_job_openings.py"
+    )
+    token_refresh_cron_job = (
+        f"python {level_up_directory_path}/cron-jobs/cron_refresh_token.py"
+    )
+    cron_jobs = (
+        f"0 */6 * * * {job_openings_cron_job}\n0 0 */13 * * {token_refresh_cron_job}"
+    )
+    subprocess.Popen(f"echo '{cron_jobs}' | crontab -", shell=True)
 
+
+@slack_bot_app.command("/subscribe")
+def subscribe(ack, body):
     channel_id = body["channel_id"]
     notion_table_url = body["text"]  # extract notion table url provided by user
+    os.environ["SLACK_CHANNEL_ID"] = channel_id
+    os.environ["NOTION_TABLE_URL"] = notion_table_url
     dotenv.set_key(".env", "SLACK_CHANNEL_ID", channel_id)
     dotenv.set_key(".env", "NOTION_TABLE_URL", notion_table_url)
     threading.Thread(target=handle_subscription, args=(notion_table_url,)).start()
