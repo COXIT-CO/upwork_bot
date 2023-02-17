@@ -2,7 +2,6 @@ from app.database import DB
 
 
 class Job(DB.Model):
-
     __tablename__ = "job"
 
     id = DB.Column(DB.Integer, primary_key=True)
@@ -20,7 +19,6 @@ class Job(DB.Model):
 
 
 class Invitation(DB.Model):
-
     __tablename__ = "invitations"
 
     id = DB.Column(DB.Integer, primary_key=True)
