@@ -1,5 +1,6 @@
 import ast
 import os
+import selenium.common.exceptions
 import sys
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
@@ -21,6 +22,8 @@ for line in lines:
         os.environ["SLACK_BOT_TOKEN"] = line.split("=")[-1][:-1]
     elif "SLACK_SIGNING_SECRET" in line:
         os.environ["SLACK_SIGNING_SECRET"] = line.split("=")[-1][:-1]
+    elif "LOGIN_ANSWER" in line:
+        os.environ["LOGIN_ANSWER"] = line.split("=")[-1][:-1]
 
 from app.app import flask_app
 from bs4 import BeautifulSoup
@@ -79,36 +82,86 @@ chrome_options.add_argument(f"--user-agent={USER_AGENT}")
 driver = webdriver.Chrome(
     ChromeDriverManager().install(), chrome_options=chrome_options
 )
+# this is default maximum window size opening on digitalocean, so use this as a constant
+driver.set_window_size(800, 600)
 
 driver.get("https://www.upwork.com/ab/proposals/")
 
-# Find the email form element and fill it in
-email = driver.find_element(By.ID, "login_username")
-email.send_keys(os.getenv("CLIENT_EMAIL"))
-email.send_keys(Keys.RETURN)
 
-# # Find the next button and click it
-submit_button = driver.find_element(By.ID, "login_password_continue")
-submit_button.click()
+email_input_field = driver.find_element(By.ID, "login_username")
+email_input_field.send_keys(os.getenv("CLIENT_EMAIL"))
+email_input_field.send_keys(Keys.RETURN)
 
-password_field = WebDriverWait(driver, 30).until(
-    EC.visibility_of_element_located((By.ID, "password"))
+try:
+    email_submit_button = driver.find_element(By.ID, "login_password_continue")
+    try:
+        email_submit_button.click()
+    except selenium.common.exceptions.ElementClickInterceptedException:
+        # execute this script if some element covers button
+        driver.execute_script("arguments[0].click();", email_submit_button)
+except (
+    selenium.common.exceptions.NoSuchElementException,
+    selenium.common.exceptions.StaleElementReferenceException,
+):
+    pass
+
+
+WebDriverWait(driver, 90).until(
+    EC.visibility_of_element_located((By.ID, "login_password"))
 )
+password_input_field = driver.find_element(By.ID, "login_password")
+password_input_field.send_keys(os.getenv("CLIENT_PASSWORD"))
+password_input_field.send_keys(Keys.RETURN)
 
-password = driver.find_element(By.ID, "login_password")
-password.send_keys(os.getenv("CLIENT_PASSWORD"))
+try:
+    password_submit_button = driver.find_element(By.ID, "login_control_continue")
+    try:
+        password_submit_button.click()
+    except selenium.common.exceptions.ElementClickInterceptedException:
+        # execute this script if some element covers button
+        driver.execute_script("arguments[0].click();", password_submit_button)
+except (
+    selenium.common.exceptions.NoSuchElementException,
+    selenium.common.exceptions.StaleElementReferenceException,
+):
+    pass
 
-next_button_2 = driver.find_element(By.ID, "login_control_continue")
-next_button_2.click()
 
-WebDriverWait(driver, 30).until(
-    EC.visibility_of_element_located((By.CLASS_NAME, "up-proposals-list__block"))
-)
+try:
+    WebDriverWait(driver, 30).until(
+        EC.visibility_of_element_located((By.ID, "login_answer"))
+    )
+    login_answer = driver.find_element(By.ID, "login_answer")
+    login_answer.send_keys(os.getenv("LOGIN_ANSWER"))
+    login_answer.send_keys(Keys.RETURN)
 
-soup = BeautifulSoup(driver.page_source, "html.parser")
-invitations_block = soup.find("div", {"data-qa": "card-active-proposals"}).find(
-    "div", {"class": "up-proposals-list__block"}
-)
+    login_answer_button = driver.find_element(By.ID, "login_control_continue")
+    try:
+        login_answer_button.click()
+    except selenium.common.exceptions.ElementClickInterceptedException:
+        # execute this script if some element covers button
+        driver.execute_script("arguments[0].click();", login_answer_button)
+except (
+    selenium.common.exceptions.NoSuchElementException,
+    selenium.common.exceptions.TimeoutException,
+    selenium.common.exceptions.StaleElementReferenceException,
+):
+    pass
+
+
+try:
+    WebDriverWait(driver, 90).until(
+        EC.visibility_of_element_located((By.CLASS_NAME, "up-proposals-list__block"))
+    )
+    soup = BeautifulSoup(driver.page_source, "html.parser")
+    invitations_block = soup.find("div", {"data-qa": "card-invitations"}).find(
+        "div", {"class": "up-proposals-list__block"}
+    )
+    if invitations_block is None:
+        raise selenium.common.exceptions.TimeoutException()
+except selenium.common.exceptions.TimeoutException:
+    # do nothing if there ae no invitations available
+    sys.exit()
 
 invitations = []
 
@@ -116,10 +169,9 @@ for invitation in invitations_block.contents:
     invitation_content = invitation.contents[0]
     div_with_link = [item for item in invitation_content.contents if item != " "][-1]
     a_tag = div_with_link.find("a")
-    link = "https://www.upwork.com" + a_tag.get("href")
-    text = a_tag.text
-    invitations.append({"link": link, "text": text})
-
+    invitation_link = "https://www.upwork.com" + a_tag.get("href")
+    link_text = a_tag.text
+    invitations.append({"link": invitation_link, "text": link_text})
 
 new_invitations = find_new_invitations(invitation_controller, invitations)
 remove_unavailable_invitations_from_db(invitation_controller, invitations)
