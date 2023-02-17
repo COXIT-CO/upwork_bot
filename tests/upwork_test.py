@@ -1,10 +1,15 @@
-import os
 import dotenv
+import os
+import sys
 
 dotenv.load_dotenv(".env")
+current_directory_path = os.path.dirname(os.path.abspath(__file__))
+level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
+sys.path.insert(0, level_up_directory_path)
+
 import pytest
-from ..helpers.exceptions import CustomException
-from ..upwork_part.upwork_integration import UpworkClient, Job
+from helpers import exceptions
+from upwork_part.upwork_integration import UpworkClient, Job
 
 UPWORK_CLIENT_ID = os.getenv("CLIENT_ID")
 UPWORK_CLIENT_SECRET = os.getenv("CLIENT_SECRET")
@@ -79,12 +84,12 @@ class TestUpworkJob:
             """should raise an exception on the stage of getting job info"""
             pytest.mark.xfail(strict=True)
             job = Job(job_url)
-            with pytest.raises(CustomException):
+            with pytest.raises(exceptions.CustomException):
                 job.get_job(
                     upwork_client.receive_upwork_client()
                 )  # wrong job key should raise an exception
         elif test_id == 3:
             """should raise an exception on the stage of Job object creation"""
             pytest.mark.xfail(strict=True)
-            with pytest.raises(CustomException):
+            with pytest.raises(exceptions.CustomException):
                 Job(job_url)  # wrong utl should raise an exception
