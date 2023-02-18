@@ -98,8 +98,8 @@ password_field = WebDriverWait(driver, 30).until(
 password = driver.find_element(By.ID, "login_password")
 password.send_keys(os.getenv("CLIENT_PASSWORD"))
 
-next_button_2 = driver.find_element(By.ID, "login_control_continue")
-next_button_2.click()
+next_button = driver.find_element(By.ID, "login_control_continue")
+next_button.click()
 
 WebDriverWait(driver, 30).until(
     EC.visibility_of_element_located((By.CLASS_NAME, "up-proposals-list__block"))
