@@ -41,15 +41,15 @@ def subscribe(ack, body):
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
     subprocess.Popen(
-        f"{python_path} /app/cron-jobs/cron_job_openings.py",
+        f"{python_path} /app/cron_jobs/cron_job_openings.py",
         shell=True,
     )
     subprocess.Popen(
-        f"{python_path} /app/cron-jobs/cron_interview_updates.py",
+        f"{python_path} /app/cron_jobs/cron_interview_updates.py",
         shell=True,
     )
     subprocess.Popen(
-        f"{python_path} /app/cron-jobs/cron_refresh_token.py",
+        f"{python_path} /app/cron_jobs/cron_refresh_token.py",
         shell=True,
     )
     ack()
