@@ -20,14 +20,14 @@ class JobController:
     @classmethod
     def get(cls, job_url=None):
         if job_url is None:
-            return "You haven't provided job key! It's required"
+            return "You haven't provided job url! It's required"
         job = Job.query.filter_by(job_url=job_url).first()
         return job if job else ""
 
     @classmethod
     def delete(cls, job_url=None):
         if job_url is None:
-            return "You haven't provided job key! It's required"
+            return "You haven't provided job url! It's required"
         job = Job.query.filter_by(job_url=job_url).first()
         if job is None:
             return "No such job opening!"
@@ -50,7 +50,7 @@ class InvitationController:
     @classmethod
     def get(cls, invitation_url=None):
         if invitation_url is None:
-            return "You haven't provided invitation key! It's required"
+            return "You haven't provided invitation url! It's required"
         invitation = Invitation.query.filter_by(url=invitation_url).first()
         return invitation if invitation else ""
 
