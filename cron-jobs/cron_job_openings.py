@@ -59,7 +59,7 @@ def delete_jobs_from_env_file():
         file.writelines(filtered_lines)
 
 
-def find_new_job_openings(job_controller, opened_jobs):
+def find_new_job_openings(job_controller: JobController, opened_jobs, origin):
     new_job_openings = []
     for job in opened_jobs:
         job_url = job["job_url"]
@@ -68,31 +68,31 @@ def find_new_job_openings(job_controller, opened_jobs):
         if not job_object:
             # job is new, so save it to db
             with flask_app.app_context():
-                job_controller.create(job_url)
+                job_controller.create(job_url, origin=origin)
             new_job_openings.append(job)
     return new_job_openings
 
 
-def remove_unavailable_jobs_from_db(job_controller, currently_available_jobs):
+def remove_unavailable_jobs_from_db(job_controller: JobController, active_jobs, origin):
     with flask_app.app_context():
-        jobs_in_db = JobModel.query.all()
+        db_jobs = JobModel.query.filter_by(origin=origin).all()
 
-    for job in jobs_in_db:
-        job_key = job.job_key
-        is_db_job_available = False
-        for job_url in currently_available_jobs:
-            if job_key in job_url:
-                is_db_job_available = True
+    for job in db_jobs:
+        url = job.job_url
+        origin = job.origin
+        is_job_available = False
+        for job_url in active_jobs:
+            if url == job_url:
+                is_job_available = True
 
-        if not is_db_job_available:
+        if not is_job_available:
             with flask_app.app_context():
-                job_controller.delete(job_key)
+                job_controller.delete(url)
 
 
 def remove_job_from_db(job_controller: JobController, job_url: str):
-    job_key = job_url.split("~")[-1]
     with flask_app.app_context():
-        job_controller.delete(job_key)
+        job_controller.delete(job_url)
 
 
 upwork_client.refresh_access_token_data()
@@ -100,7 +100,7 @@ upwork_client.refresh_access_token_data()
 projects_data = scrape_notion_table(notion_table_url)
 job_controller = JobController()
 jobs = []
-currently_available_jobs = []
+active_jobs = []
 for job_data in projects_data:
     job_url = job_data["url"]
     job_title = job_data["title"]
@@ -115,11 +115,11 @@ for job_data in projects_data:
         if len(other_opened_jobs) == 0:
             remove_job_from_db(job_controller, job_url)
         else:
-            currently_available_jobs.append(job_url)
+            active_jobs.append(job_url)
             for job in other_opened_jobs:
-                currently_available_jobs.append(job["job_url"])
+                active_jobs.append(job["job_url"])
 
-            new_job_openings = find_new_job_openings(job_controller, other_opened_jobs)
+            new_job_openings = find_new_job_openings(job_controller, other_opened_jobs, origin="upwork")
             if len(new_job_openings):
                 # new job openings appeared for origin one
                 serialized_job_info["other_opened_jobs"] = new_job_openings
@@ -132,7 +132,7 @@ for job_data in projects_data:
             )
 
 # if client doesn't have a job or some jobs anymore remove it from DB
-remove_unavailable_jobs_from_db(job_controller, currently_available_jobs)
+remove_unavailable_jobs_from_db(job_controller, active_jobs, origin="upwork")
 if jobs:
     blocks = [
         {
