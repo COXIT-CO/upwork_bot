@@ -5,12 +5,13 @@ URL = "https://www.upwork.com/jobs/"
 
 class JobController:
     @classmethod
-    def create(cls, job_url=None):
+    def create(cls, job_url=None, origin=None):
         if job_url is None:
             return "You haven't provided job url! It's required"
-        job_key = job_url.split("~")[-1]
-        if Job.query.filter_by(job_key=job_key).first() is None:
-            new_job = Job(job_key=job_key)
+        if origin is None:
+            return "You haven't provided origin for job! It's required"
+        if Job.query.filter_by(job_url=job_url).first() is None:
+            new_job = Job(job_url=job_url, origin=origin)
             new_job.save()
             return "Successfully saved."
         else:
@@ -20,15 +21,14 @@ class JobController:
     def get(cls, job_url=None):
         if job_url is None:
             return "You haven't provided job key! It's required"
-        job_key = job_url.split("~")[-1]
-        job = Job.query.filter_by(job_key=job_key).first()
+        job = Job.query.filter_by(job_url=job_url).first()
         return job if job else ""
 
     @classmethod
-    def delete(cls, job_key=None):
-        if job_key is None:
+    def delete(cls, job_url=None):
+        if job_url is None:
             return "You haven't provided job key! It's required"
-        job = Job.query.filter_by(job_key=job_key).first()
+        job = Job.query.filter_by(job_url=job_url).first()
         if job is None:
             return "No such job opening!"
         job.delete()
