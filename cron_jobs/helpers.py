@@ -8,10 +8,12 @@ sys.path.insert(0, level_up_directory_path)
 
 from app.app import flask_app
 from upwork_part.schema.controllers import JobController
+from upwork_part.schema.controllers import InvitationController
 from upwork_part.schema.models import Job as JobModel
+from upwork_part.schema.models import Invitation
 
 job_controller = JobController()
-
+invitation_controller = InvitationController()
 
 def find_new_job_openings(opened_jobs, origin):
     new_job_openings = []
@@ -47,3 +49,32 @@ def remove_unactive_jobs_from_db(active_jobs, origin):
 def remove_job_from_db(job_url: str):
     with flask_app.app_context():
         return job_controller.delete(job_url)
+
+
+def find_new_invitations(invitations):
+    new_invitations = []
+    for inv in invitations:
+        invitation_link = inv["link"]
+        with flask_app.app_context():
+            invitation = invitation_controller.get(invitation_link)
+        if not invitation:
+            # invitation is new, so save it to db
+            with flask_app.app_context():
+                invitation_controller.create(invitation_link)
+            new_invitations.append(inv)
+    return new_invitations
+
+
+def remove_unactive_invitations_from_db(invitations):
+    with flask_app.app_context():
+        invitations_from_bd = Invitation.query.all()
+
+    for inv_db in invitations_from_bd:
+        inv_db_link = inv_db.url
+        for inv in invitations:
+            inv_link = inv["link"]
+            if inv_db_link == inv_link:
+                break
+        else:
+            with flask_app.app_context():
+                invitation_controller.delete(inv_db_link)
