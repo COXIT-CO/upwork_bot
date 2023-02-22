@@ -25,8 +25,11 @@ for line in lines:
     elif "LOGIN_ANSWER" in line:
         os.environ["LOGIN_ANSWER"] = line.split("=")[-1][:-1]
 
-from app.app import flask_app
 from bs4 import BeautifulSoup
+from cron_jobs.helpers import (
+    find_new_invitations,
+    remove_unactive_invitations_from_db
+)
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
@@ -34,41 +37,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from slack.app import slack_bot_app
-from upwork_part.schema.controllers import InvitationController
-from upwork_part.schema.models import Invitation
 from webdriver_manager.chrome import ChromeDriverManager
-
-invitation_controller = InvitationController()
-
-
-def find_new_invitations(invitation_controller, invitations):
-    new_invitations = []
-    for inv in invitations:
-        invitation_link = inv["link"]
-        with flask_app.app_context():
-            invitation = invitation_controller.get(invitation_link)
-        if not invitation:
-            # invitation is new, so save it to db
-            with flask_app.app_context():
-                invitation_controller.create(invitation_link)
-            new_invitations.append(inv)
-    return new_invitations
-
-
-def remove_unactive_invitations_from_db(invitation_controller, invitations):
-    with flask_app.app_context():
-        invitations_from_bd = Invitation.query.all()
-
-    for inv_db in invitations_from_bd:
-        inv_db_link = inv_db.url
-        for inv in invitations:
-            inv_link = inv["link"]
-            if inv_db_link == inv_link:
-                break
-        else:
-            with flask_app.app_context():
-                invitation_controller.delete(inv_db_link)
-
 
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
 
@@ -173,8 +142,8 @@ for invitation in invitations_block.contents:
     link_text = a_tag.text
     invitations.append({"link": invitation_link, "text": link_text})
 
-new_invitations = find_new_invitations(invitation_controller, invitations)
-remove_unactive_invitations_from_db(invitation_controller, invitations)
+new_invitations = find_new_invitations(invitations)
+remove_unactive_invitations_from_db(invitations)
 
 
 blocks = [
