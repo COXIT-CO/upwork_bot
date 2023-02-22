@@ -17,7 +17,7 @@ from cron_jobs.helpers import (
     find_new_invitations,
     remove_job_from_db,
     remove_unactive_jobs_from_db,
-    remove_unactive_invitations_from_db
+    remove_unactive_invitations_from_db,
 )
 from upwork_part.schema.controllers import JobController
 from upwork_part.schema.controllers import InvitationController
@@ -240,23 +240,23 @@ def test_find_new_invitations_setup():
             [
                 {"text": f"inv {i}", "link": f"https://invitation_{i}.com"}
                 for i in range(5, 7)
-            ]
+            ],
         ),  # all new invitations
         (
             2,
             [
                 {"text": f"inv {i}", "link": f"https://invitation_{i}.com"}
                 for i in range(5)
-            ]
+            ],
         ),  # already existing invitations
         (
             3,
             [
                 {"text": f"inv {i}", "link": f"https://invitation_{i}.com"}
                 for i in range(3, 7)
-            ]
-        )  # partially new invitations
-    ]
+            ],
+        ),  # partially new invitations
+    ],
 )
 def test_find_new_invitations(test_find_new_invitations_setup, id, test):
     with flask_app.app_context():
@@ -287,21 +287,42 @@ def test_find_new_invitations(test_find_new_invitations_setup, id, test):
 def test_remove_unactive_invitations_from_db_setup():
     with flask_app.app_context():
         for i in range(5):
-            invitation_controller.create(invitation_url=f"https://invitation_upwork_{i}.com")
+            invitation_controller.create(
+                invitation_url=f"https://invitation_upwork_{i}.com"
+            )
         for i in range(5):
-            invitation_controller.create(invitation_url=f"https://invitation_linkedin_{i}.com")
-        invitation_controller.create(invitation_url=f"https://invitation_tempest_{i}.com")
+            invitation_controller.create(
+                invitation_url=f"https://invitation_linkedin_{i}.com"
+            )
+        invitation_controller.create(
+            invitation_url=f"https://invitation_tempest_{i}.com"
+        )
 
 
 @pytest.mark.parametrize(
     "id,test",
     [
-        (1, [{"text": f"inv {i}", "link": f"https://invitation_upwork_{i}.com"} for i in range(5)]),
-        (2, [{"text": "inv", "link": "https://wrong_invitation.com"} for _ in range(5)]),
+        (
+            1,
+            [
+                {"text": f"inv {i}", "link": f"https://invitation_upwork_{i}.com"}
+                for i in range(5)
+            ],
+        ),
+        (
+            2,
+            [{"text": "inv", "link": "https://wrong_invitation.com"} for _ in range(5)],
+        ),
         (
             3,
-            [{"text": f"inv {i}", "link": f"https://invitation_upwork_{i}.com"} for i in range(3)]
-            + [{"text": "inv", "link": "https://invitation_upwork.com"} for _ in range(3)],
+            [
+                {"text": f"inv {i}", "link": f"https://invitation_upwork_{i}.com"}
+                for i in range(3)
+            ]
+            + [
+                {"text": "inv", "link": "https://invitation_upwork.com"}
+                for _ in range(3)
+            ],
         ),
     ],
 )
@@ -314,18 +335,20 @@ def test_remove_unactive_invitations_from_db(
                 remove_unactive_invitations_from_db(test)
                 with flask_app.app_context():
                     if len(Invitation.query.all()) != 5:
-                        pytest.fail("There must be exactly 5 invitations in db!") 
+                        pytest.fail("There must be exactly 5 invitations in db!")
             case 2:
                 remove_unactive_invitations_from_db(test)
                 with flask_app.app_context():
                     if len(Invitation.query.all()) != 0:
-                        pytest.fail("There must no invitations in db!") 
+                        pytest.fail("There must no invitations in db!")
             case 3:
                 remove_unactive_invitations_from_db(test)
                 with flask_app.app_context():
                     if len(Invitation.query.all()) != 3:
                         pytest.fail("There must be exactly 3 invitations in db!")
-                    for inv_url in [f"https://invitation_upwork_{i}.com" for i in range(3)]:
+                    for inv_url in [
+                        f"https://invitation_upwork_{i}.com" for i in range(3)
+                    ]:
                         if invitation_controller.get(inv_url) == "":
                             pytest.fail(f"Invitation {inv_url} must be in db!")
 
