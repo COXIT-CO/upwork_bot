@@ -55,7 +55,7 @@ def find_new_invitations(invitation_controller, invitations):
     return new_invitations
 
 
-def remove_unavailable_invitations_from_db(invitation_controller, invitations):
+def remove_unactive_invitations_from_db(invitation_controller, invitations):
     with flask_app.app_context():
         invitations_from_bd = Invitation.query.all()
 
@@ -174,7 +174,7 @@ for invitation in invitations_block.contents:
     invitations.append({"link": invitation_link, "text": link_text})
 
 new_invitations = find_new_invitations(invitation_controller, invitations)
-remove_unavailable_invitations_from_db(invitation_controller, invitations)
+remove_unactive_invitations_from_db(invitation_controller, invitations)
 
 
 blocks = [
