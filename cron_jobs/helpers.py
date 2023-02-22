@@ -26,7 +26,7 @@ def find_new_job_openings(opened_jobs, origin):
     return new_job_openings
 
 
-def remove_unavailable_jobs_from_db(active_jobs, origin):
+def remove_unactive_jobs_from_db(active_jobs, origin):
     with flask_app.app_context():
         db_jobs = JobModel.query.filter_by(origin=origin).all()
 
@@ -45,4 +45,4 @@ def remove_unavailable_jobs_from_db(active_jobs, origin):
 
 def remove_job_from_db(job_url: str):
     with flask_app.app_context():
-        job_controller.delete(job_url)
+        return job_controller.delete(job_url)
