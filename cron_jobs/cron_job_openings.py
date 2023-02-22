@@ -40,7 +40,7 @@ from slack_bolt import App
 from notion.notion_table_scraper import scrape_notion_table
 from upwork_part.upwork_integration import Job
 from upwork_part.upwork_integration import upwork_client
-from cron_jobs.helpers import find_new_job_openings, remove_unavailable_jobs_from_db, remove_job_from_db
+from cron_jobs.helpers import find_new_job_openings, remove_unactive_jobs_from_db, remove_job_from_db
 
 slack_bot_app = App(
     signing_secret=os.getenv("SLACK_SIGNING_SECRET"), token=os.getenv("SLACK_BOT_TOKEN")
@@ -93,7 +93,7 @@ for job_data in projects_data:
             )
 
 # if client doesn't have a job or some jobs anymore remove it from DB
-remove_unavailable_jobs_from_db(active_jobs, origin="upwork")
+remove_unactive_jobs_from_db(active_jobs, origin="upwork")
 if jobs:
     blocks = [
         {
