@@ -12,6 +12,7 @@ from upwork_part.schema.models import Job as JobModel
 
 job_controller = JobController()
 
+
 def find_new_job_openings(opened_jobs, origin):
     new_job_openings = []
     for job in opened_jobs:
