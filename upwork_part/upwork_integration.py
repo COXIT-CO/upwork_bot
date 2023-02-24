@@ -148,10 +148,15 @@ class Job:
         given job url extract info about job itself: title and other job openings
         """
         job_key = self.get_job_id_from_url(self.__job_url)
-        job_data = profile.Api(upwork_client).get_specific(job_key)
+        try:
+            job_data = profile.Api(upwork_client).get_specific(job_key)
+        except requests.exceptions.JSONDecodeError:
+            raise exceptions.CustomException(
+                f"Your job {self.__job_url} contains wrong job key {job_key}. Verify it is of structure https://www.upwork.com/jobs/~ + alphanumeric id!"
+            )
         if "error" in job_data:
             raise exceptions.CustomException(
-                f"Your job url {self.__job_url} contains wrong job key {job_key} (letters after '~' symbol)!"
+                f"Your job {self.__job_url} is private and not accessible or contains wrong job key {job_key} and can't be found!"
             )
 
         job = Job(self.__job_url)
@@ -196,6 +201,8 @@ class Job:
             for job_dict in other_opened_jobs_data:
                 job_key = job_dict["op_ciphertext"]
                 job_data = profile.Api(upwork_client).get_specific(job_key)
+                if "error" in job_data:
+                    continue
                 full_job_url = upwork_job_generic_url + job_key
 
                 job = Job(full_job_url)
