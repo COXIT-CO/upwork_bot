@@ -98,6 +98,7 @@ for job_data in projects_data:
 
 # if client doesn't have a job or some jobs anymore remove it from DB
 remove_unactive_jobs_from_db(active_jobs, origin="upwork")
+
 if jobs:
     blocks = [
         {
@@ -121,8 +122,11 @@ if jobs:
     }
     if len(str(jobs)) > 2000:
         delete_jobs_from_env_file()
+        with open(level_up_directory_path + "/.env", "r") as file:
+            lines = file.readlines()
         with open(level_up_directory_path + "/.env", "w") as file:
-            file.write(f"JOBS={str(jobs)}\n")
+            lines.append(f"JOBS={str(jobs)}\n")
+            file.writelines(lines)
     else:
         modal_window["elements"][0]["value"] = str(jobs)
     blocks.append(modal_window)
