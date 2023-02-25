@@ -24,7 +24,20 @@ def subscribe(ack, body):
         # do nothing if we subscribe for the first time
         pass
 
+    try:
+        with open(f"{level_up_directory_path}/.env", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                if "JOBS" in line:
+                    jobs = line
+    except FileNotFoundError:
+        pass
+
     with open(f"{level_up_directory_path}/.env", "w") as file:
+        try:
+            file.write(jobs)
+        except NameError:
+            pass
         file.write(f"NOTION_TABLE_URL={notion_table_url}\n")
         file.write(f"SLACK_CHANNEL_ID={str(channels)}\n")
         file.write(f"SLACK_SIGNING_SECRET={os.getenv('SLACK_SIGNING_SECRET')}\n")
@@ -65,8 +78,11 @@ def handle_job_openings(ack, body, payload, client):
         level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
         with open(level_up_directory_path + "/.env", "r") as file:
             lines = file.readlines()
-        jobs = "".join(lines)[5:-1]
-        jobs_to_list = ast.literal_eval(jobs)
+        for line in lines:
+            if "JOBS" in line:
+                jobs = "".join(line)[5:-1]
+                jobs_to_list = ast.literal_eval(jobs)
+                break
     client.views_open(
         trigger_id=body["trigger_id"],
         view={
