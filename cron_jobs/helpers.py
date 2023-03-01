@@ -11,6 +11,11 @@ from upwork_part.schema.controllers import JobController
 from upwork_part.schema.controllers import InvitationController
 from upwork_part.schema.models import Job as JobModel
 from upwork_part.schema.models import Invitation
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import selenium.common.exceptions
+from selenium.webdriver.common.keys import Keys
 
 job_controller = JobController()
 invitation_controller = InvitationController()
@@ -79,3 +84,45 @@ def remove_unactive_invitations_from_db(invitations):
         else:
             with flask_app.app_context():
                 invitation_controller.delete(inv_db_link)
+
+
+
+def scroll_page_down(driver):
+    while True:
+        last_height = driver.execute_script("return document.body.scrollHeight")
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        import time
+        time.sleep(1)
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+    time.sleep(1)
+
+
+def authorize_user(driver):
+    try:
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.CLASS_NAME, "focus-page"))
+        )
+        # input()
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//button[@class='authwall-join-form__form-toggle--bottom form-toggle']"))
+        )
+        sign_in_button = driver.find_element(By.XPATH, "//button[@class='authwall-join-form__form-toggle--bottom form-toggle']")
+        sign_in_button.click()
+
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//input[@class='input__input' and @id='session_key']"))
+        )
+        email_field = driver.find_element(By.XPATH, "//input[@class='input__input' and @id='session_key']")
+        email_field.send_keys("lnkdnjobextract@gmail.com")
+        # email_field.send_keys(Keys.RETURN)
+
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_element_located((By.XPATH, "//input[@class='input__input' and @id='session_password']"))
+        )
+        password_field = driver.find_element(By.XPATH, "//input[@class='input__input' and @id='session_password']")
+        password_field.send_keys("m@PNfFPP2hSTdAWv")
+        password_field.send_keys(Keys.RETURN)
+    except selenium.common.exceptions.TimeoutException:
+        pass
