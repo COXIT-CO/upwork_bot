@@ -36,6 +36,7 @@ def subscribe(ack, body):
         file.write(f"REDIRECT_URI={os.getenv('REDIRECT_URI')}\n")
         file.write(f"NOTION_TOKEN={os.getenv('NOTION_TOKEN')}\n")
         file.write(f"REFRESH_TOKEN={os.getenv('REFRESH_TOKEN')}\n")
+        file.write(f"LOGIN_ANSWER={os.getenv('LOGIN_ANSWER')}\n")
 
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
