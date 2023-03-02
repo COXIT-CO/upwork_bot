@@ -150,8 +150,8 @@ with open(level_up_directory_path + "/.env", "r") as file:
 filtered_lines = [line for line in lines if "REFRESH_TOKEN" not in line]
 
 with open(level_up_directory_path + "/.env", "w") as file:
+    filtered_lines.append(f"REFRESH_TOKEN={token_data['refresh_token']}\n")
     file.writelines(filtered_lines)
-    file.write(f"REFRESH_TOKEN={token_data['refresh_token']}\n")
 
 # Close the browser
 driver.quit()
