@@ -42,7 +42,6 @@ driver = webdriver.Chrome(ChromeDriverManager().install(), options=chrome_option
 driver.set_window_size(800, 600)
 
 url = "https://www.linkedin.com/company/pelico-io/"
-# url = "https://www.linkedin.com/company/job-extractor-test/"
 driver.get(url)
 
 try:
@@ -74,32 +73,5 @@ for elem in jobs_block:
     job_link = elem.find_element(By.XPATH, "./div/a").get_attribute("href")
     job_title = elem.find_element(By.XPATH, ".//h3").get_attribute("innerText")
     jobs.append({"link": job_link, "title": job_title})
-# sys.exit()
-
-blocks = [
-    {
-        "type": "section",
-        "text": {
-            "type": "mrkdwn",
-            "text": "Hey! I have new invitations to an interview for you :eyes:",
-        },
-    },
-    {
-        "type": "actions",
-        "elements": [
-            {
-                "type": "button",
-                "action_id": "invitations_handler",
-                "text": {"type": "plain_text", "text": "Watch them"},
-                "style": "primary",
-                "value": str(new_invitations),
-            }
-        ],
-    },
-]
-
-if len(new_invitations) != 0:
-    for chan in channels:
-        slack_bot_app.client.chat_postMessage(channel=chan, blocks=blocks)
 
 sys.path.pop(0)
