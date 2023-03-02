@@ -47,12 +47,20 @@ driver.get(url)
 
 try:
     WebDriverWait(driver, 5).until(
-        EC.visibility_of_element_located((By.XPATH, "//a[@class='top-card-layout__cta mt-2 ml-1.5 h-auto babybear:flex-auto top-card-layout__cta--primary btn-md btn-primary']"))
+        EC.visibility_of_element_located(
+            (
+                By.XPATH,
+                "//a[@class='top-card-layout__cta mt-2 ml-1.5 h-auto babybear:flex-auto top-card-layout__cta--primary btn-md btn-primary']",
+            )
+        )
     )
 except selenium.common.exceptions.TimeoutException:
     sys.exit()
 
-see_jobs_link = driver.find_element(By.XPATH, "//a[@class='top-card-layout__cta mt-2 ml-1.5 h-auto babybear:flex-auto top-card-layout__cta--primary btn-md btn-primary']")
+see_jobs_link = driver.find_element(
+    By.XPATH,
+    "//a[@class='top-card-layout__cta mt-2 ml-1.5 h-auto babybear:flex-auto top-card-layout__cta--primary btn-md btn-primary']",
+)
 driver.get(see_jobs_link.get_attribute("href"))
 
 WebDriverWait(driver, 5).until(

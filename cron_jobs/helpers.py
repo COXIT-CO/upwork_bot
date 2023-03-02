@@ -86,12 +86,12 @@ def remove_unactive_invitations_from_db(invitations):
                 invitation_controller.delete(inv_db_link)
 
 
-
 def scroll_page_down(driver):
     while True:
         last_height = driver.execute_script("return document.body.scrollHeight")
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         import time
+
         time.sleep(1)
         new_height = driver.execute_script("return document.body.scrollHeight")
         if new_height == last_height:
