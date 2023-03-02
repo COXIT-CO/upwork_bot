@@ -70,7 +70,7 @@ except (
     selenium.common.exceptions.StaleElementReferenceException,
 ):
     pass
-    
+
 
 WebDriverWait(driver, 90).until(
     EC.visibility_of_element_located((By.ID, "login_password"))
