@@ -1,4 +1,4 @@
-from .models import Job
+from .models import Job, Invitation
 
 URL = "https://www.upwork.com/jobs/"
 
@@ -32,4 +32,34 @@ class JobController:
         if job is None:
             return "No such job opening!"
         job.delete()
+        return "Deleted successfully!"
+
+
+class InvitationController:
+    @classmethod
+    def create(cls, invitation_url=None):
+        if invitation_url is None:
+            return "You haven't provided invitation url! It's required"
+        if Invitation.query.filter_by(url=invitation_url).first() is None:
+            new_invitation = Invitation(url=invitation_url)
+            new_invitation.save()
+            return "Successfully saved."
+        else:
+            return "Invitation already in database!"
+
+    @classmethod
+    def get(cls, invitation_url=None):
+        if invitation_url is None:
+            return "You haven't provided invitation key! It's required"
+        invitation = Invitation.query.filter_by(url=invitation_url).first()
+        return invitation if invitation else ""
+
+    @classmethod
+    def delete(cls, invitation_url=None):
+        if invitation_url is None:
+            return "You haven't provided invitation url! It's required"
+        invitation = Invitation.query.filter_by(url=invitation_url).first()
+        if invitation is None:
+            return "No such invitation!"
+        invitation.delete()
         return "Deleted successfully!"

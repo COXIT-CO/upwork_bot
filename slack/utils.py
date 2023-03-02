@@ -17,5 +17,17 @@ def build_blocks_given_job_openings(job_openings):
     return blocks
 
 
+def build_blocks_given_invitations(invitations):
+    """given job openings build blocks to show in modal window"""
+    blocks = []
+    invitation_text = ""
+    for index, invitation in enumerate(invitations, start=1):
+        link = invitation["link"]
+        text = invitation["text"]
+        invitation_text += f"{index}) <{link}|{text}>\n"
+    blocks = [{"type": "section", "text": {"type": "mrkdwn", "text": invitation_text}}]
+    return blocks
+
+
 def build(current_job_url, current_job_title):
     return f"<{current_job_url}|{current_job_title}>"

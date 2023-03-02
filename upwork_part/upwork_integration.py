@@ -9,9 +9,7 @@ import os
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-import dotenv
 
-dotenv.load_dotenv(level_up_directory_path + "/.env")
 import sys
 
 sys.path.insert(0, level_up_directory_path)
@@ -102,10 +100,9 @@ class UpworkClient:
         )
 
     def update_token_data(self, token_data):
-        print(token_data)
         """
         function invoked when refresh token expires, so we pass new token data to asign it to upwork client object
-        :param token_data: looks like this 
+        :param token_data: looks like this
         {
             'access_token': <access_token>,
             'expires_at': 1234567890.12345,
@@ -154,7 +151,7 @@ class Job:
         job_data = profile.Api(upwork_client).get_specific(job_key)
         if "error" in job_data:
             raise exceptions.CustomException(
-                "Your job url {self.job_url} contains wrong job key {job_key} (letters after '~' symbol)!"
+                f"Your job url {self.__job_url} contains wrong job key {job_key} (letters after '~' symbol)!"
             )
 
         job = Job(self.__job_url)
