@@ -63,6 +63,7 @@ def delete_jobs_from_env_file():
 
 upwork_client.refresh_access_token_data()
 
+encountered_errors = []
 projects_data = scrape_notion_table(notion_table_url)
 jobs = []
 active_jobs = []
@@ -90,11 +91,7 @@ for job_data in projects_data:
                 serialized_job_info["other_opened_jobs"] = new_job_openings
                 jobs.append(serialized_job_info)
     except exceptions.CustomException as exc:
-        for chan in channels:
-            slack_bot_app.client.chat_postMessage(
-                channel=chan,
-                text=str(exc),
-            )
+        encountered_errors.append(str(exc))
 
 # if client doesn't have a job or some jobs anymore remove it from DB
 remove_unactive_jobs_from_db(active_jobs, origin="upwork")
@@ -131,6 +128,13 @@ if jobs:
         modal_window["elements"][0]["value"] = str(jobs)
     blocks.append(modal_window)
     for chan in channels:
-        slack_bot_app.client.chat_postMessage(channel=chan, blocks=blocks)
+        response = slack_bot_app.client.chat_postMessage(
+            channel=chan, blocks=blocks, thread_ts=""
+        )
+        response_timestamp = response["ts"]
+        for err in encountered_errors:
+            slack_bot_app.client.chat_postMessage(
+                channel=chan, text=err, thread_ts=response_timestamp
+            )
 
 sys.path.pop(0)
