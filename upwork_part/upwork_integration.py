@@ -166,16 +166,16 @@ class Job:
         return job
 
     @staticmethod
-    def get_job_id_from_url(url):
+    def get_job_id_from_url(url: str):
         """having generic url https://www.upwork.com/jobs/~016b4000a5635eebbe
         capture 016b4000a5635eebbe and return it"""
+        url = url[:-1] if url.endswith("/") else url
         job_id = "~" + url.split("~")[-1]
         return job_id
 
     def extract_job_title(self, job_data):
         """extract job title from passed job content-holding dict and create object property"""
-        self.__job_title = job_data["profile"]["op_title"]
-        return self.__job_title
+        return job_data["profile"]["op_title"]
 
     def extract_other_opened_jobs(self, job_data, upwork_client):
         """from passed job content-holding dict extract keys of other opened jobs and using upwork client make requests to get job content-holding dict and extract job title for each such job"""
@@ -193,8 +193,13 @@ class Job:
                 + job_data["profile"]["op_other_jobs"]["op_other_job"]["op_ciphertext"]
             )
             job = Job(full_job_url)
+            other_job_key = job_data["profile"]["op_other_jobs"]["op_other_job"][
+                "op_ciphertext"
+            ]
+            other_job_data = profile.Api(upwork_client).get_specific(other_job_key)
             # inner initialization of job title
-            job.extract_job_title(job_data)
+            job_title = job.extract_job_title(other_job_data)
+            job.__job_title = job_title
             other_opened_jobs.append(job)
         else:
             # client has many other jobs
@@ -207,7 +212,8 @@ class Job:
 
                 job = Job(full_job_url)
                 # inner initialization of job title
-                job.extract_job_title(job_data)
+                job_title = job.extract_job_title(job_data)
+                job.__job_title = job_title
                 other_opened_jobs.append(job)
 
         self.__other_opened_jobs = other_opened_jobs
