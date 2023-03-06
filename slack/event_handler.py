@@ -2,7 +2,7 @@ import ast
 import os
 import subprocess
 from slack.app import slack_bot_app
-from slack.utils import build_blocks_given_job_openings, build_blocks_given_invitations
+from slack.utils import build_blocks_given_job_openings, build_blocks_given_invitations, write_variables_in_file
 
 
 @slack_bot_app.command("/subscribe")
@@ -33,23 +33,120 @@ def subscribe(ack, body):
     except FileNotFoundError:
         pass
 
-    with open(f"{level_up_directory_path}/.env", "w") as file:
-        try:
-            file.write(jobs)
-        except NameError:
-            pass
-        file.write(f"NOTION_TABLE_URL={notion_table_url}\n")
-        file.write(f"SLACK_CHANNEL_ID={str(channels)}\n")
-        file.write(f"SLACK_SIGNING_SECRET={os.getenv('SLACK_SIGNING_SECRET')}\n")
-        file.write(f"SLACK_BOT_TOKEN={os.getenv('SLACK_BOT_TOKEN')}\n")
-        file.write(f"CLIENT_ID={os.getenv('CLIENT_ID')}\n")
-        file.write(f"CLIENT_SECRET={os.getenv('CLIENT_SECRET')}\n")
-        file.write(f"CLIENT_EMAIL={os.getenv('CLIENT_EMAIL')}\n")
-        file.write(f"CLIENT_PASSWORD={os.getenv('CLIENT_PASSWORD')}\n")
-        file.write(f"REDIRECT_URI={os.getenv('REDIRECT_URI')}\n")
-        file.write(f"NOTION_TOKEN={os.getenv('NOTION_TOKEN')}\n")
-        file.write(f"REFRESH_TOKEN={os.getenv('REFRESH_TOKEN')}\n")
-        file.write(f"LOGIN_ANSWER={os.getenv('LOGIN_ANSWER')}\n")
+    args = {
+        'NOTION_TABLE_URL': notion_table_url,
+        'SLACK_CHANNEL_ID': str(channels),
+        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
+        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
+        'SLACK_BOT_TOKEN': os.getenv('SLACK_BOT_TOKEN'),
+        'CLIENT_ID': os.getenv('CLIENT_ID'),
+        'CLIENT_SECRET': os.getenv('CLIENT_SECRET'),
+        'CLIENT_EMAIL': os.getenv('CLIENT_EMAIL'),
+        'CLIENT_PASSWORD': os.getenv('CLIENT_PASSWORD'),
+        'REDIRECT_URI': os.getenv('REDIRECT_URI'),
+        'NOTION_TOKEN': os.getenv('NOTION_TOKEN'),
+        'REFRESH_TOKEN': os.getenv('REFRESH_TOKEN'),
+        'LOGIN_ANSWER': os.getenv('LOGIN_ANSWER')
+    }
+    write_variables_in_file(f"{level_up_directory_path}/.env", **args)
+
+    # with open(f"{level_up_directory_path}/.env", "w") as file:
+    #     try:
+    #         file.write(jobs)
+    #     except NameError:
+    #         pass
+    #     file.write(f"NOTION_TABLE_URL={notion_table_url}\n")
+    #     file.write(f"SLACK_CHANNEL_ID={str(channels)}\n")
+    #     file.write(f"SLACK_SIGNING_SECRET={os.getenv('SLACK_SIGNING_SECRET')}\n")
+    #     file.write(f"SLACK_BOT_TOKEN={os.getenv('SLACK_BOT_TOKEN')}\n")
+    #     file.write(f"CLIENT_ID={os.getenv('CLIENT_ID')}\n")
+    #     file.write(f"CLIENT_SECRET={os.getenv('CLIENT_SECRET')}\n")
+    #     file.write(f"CLIENT_EMAIL={os.getenv('CLIENT_EMAIL')}\n")
+    #     file.write(f"CLIENT_PASSWORD={os.getenv('CLIENT_PASSWORD')}\n")
+    #     file.write(f"REDIRECT_URI={os.getenv('REDIRECT_URI')}\n")
+    #     file.write(f"NOTION_TOKEN={os.getenv('NOTION_TOKEN')}\n")
+    #     file.write(f"REFRESH_TOKEN={os.getenv('REFRESH_TOKEN')}\n")
+    #     file.write(f"LOGIN_ANSWER={os.getenv('LOGIN_ANSWER')}\n")
+
+    # docker container binded code should provide full paths to interpreter and executables
+    python_path = "/usr/local/bin/python"
+    subprocess.Popen(
+        f"{python_path} /app/cron_jobs/cron_job_openings.py",
+        shell=True,
+    )
+    subprocess.Popen(
+        f"{python_path} /app/cron_jobs/cron_interview_updates.py",
+        shell=True,
+    )
+    subprocess.Popen(
+        f"{python_path} /app/cron_jobs/cron_refresh_token.py",
+        shell=True,
+    )
+    ack()
+
+
+@slack_bot_app.command("/subscribe_linkedin")
+def subscribe(ack, body):
+    channel_id = body["channel_id"]
+    linkedin_table_url = body["text"]
+    current_directory_path = os.path.dirname(os.path.abspath(__file__))
+    level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
+    channels = [channel_id]
+    try:
+        with open(f"{level_up_directory_path}/.env", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                if "SLACK_CHANNEL_ID" in line:
+                    active_channels = ast.literal_eval(line.split("=")[-1][:-1])
+                    if channels[0] not in active_channels:
+                        channels += active_channels
+    except FileNotFoundError:
+        # do nothing if we subscribe for the first time
+        pass
+
+    try:
+        with open(f"{level_up_directory_path}/.env", "r") as file:
+            lines = file.readlines()
+            for line in lines:
+                if "JOBS" in line:
+                    jobs = line
+    except FileNotFoundError:
+        pass
+
+    args = {
+        'LINKEDIN_TABLE_URL': linkedin_table_url,
+        'SLACK_CHANNEL_ID': str(channels),
+        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
+        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
+        'SLACK_BOT_TOKEN': os.getenv('SLACK_BOT_TOKEN'),
+        'CLIENT_ID': os.getenv('CLIENT_ID'),
+        'CLIENT_SECRET': os.getenv('CLIENT_SECRET'),
+        'CLIENT_EMAIL': os.getenv('CLIENT_EMAIL'),
+        'CLIENT_PASSWORD': os.getenv('CLIENT_PASSWORD'),
+        'REDIRECT_URI': os.getenv('REDIRECT_URI'),
+        'NOTION_TOKEN': os.getenv('NOTION_TOKEN'),
+        'REFRESH_TOKEN': os.getenv('REFRESH_TOKEN'),
+        'LOGIN_ANSWER': os.getenv('LOGIN_ANSWER')
+    }
+    write_variables_in_file(f"{level_up_directory_path}/.env", **args)
+
+    # with open(f"{level_up_directory_path}/.env", "w") as file:
+    #     try:
+    #         file.write(jobs)
+    #     except NameError:
+    #         pass
+    #     file.write(f"LINKEDIN_TABLE_URL={notion_table_url}\n")
+    #     file.write(f"SLACK_CHANNEL_ID={str(channels)}\n")
+    #     file.write(f"SLACK_SIGNING_SECRET={os.getenv('SLACK_SIGNING_SECRET')}\n")
+    #     file.write(f"SLACK_BOT_TOKEN={os.getenv('SLACK_BOT_TOKEN')}\n")
+    #     file.write(f"CLIENT_ID={os.getenv('CLIENT_ID')}\n")
+    #     file.write(f"CLIENT_SECRET={os.getenv('CLIENT_SECRET')}\n")
+    #     file.write(f"CLIENT_EMAIL={os.getenv('CLIENT_EMAIL')}\n")
+    #     file.write(f"CLIENT_PASSWORD={os.getenv('CLIENT_PASSWORD')}\n")
+    #     file.write(f"REDIRECT_URI={os.getenv('REDIRECT_URI')}\n")
+    #     file.write(f"NOTION_TOKEN={os.getenv('NOTION_TOKEN')}\n")
+    #     file.write(f"REFRESH_TOKEN={os.getenv('REFRESH_TOKEN')}\n")
+    #     file.write(f"LOGIN_ANSWER={os.getenv('LOGIN_ANSWER')}\n")
 
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"

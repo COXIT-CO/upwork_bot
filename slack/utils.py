@@ -31,3 +31,21 @@ def build_blocks_given_invitations(invitations):
 
 def build(current_job_url, current_job_title):
     return f"<{current_job_url}|{current_job_title}>"
+
+
+def write_variables_in_file(file_path, **kwargs):
+    VARIABLES = ['NOTION_TABLE_URL', 'SLACK_CHANNEL_ID', 'SLACK_SIGNING_SECRET', 'SLACK_BOT_TOKEN', 'CLIENT_ID', 'CLIENT_SECRET', 'CLIENT_EMAIL', 'CLIENT_PASSWORD', 'REDIRECT_URI', 'NOTION_TOKEN', 'REFRESH_TOKEN', 'LOGIN_ANSWER']
+
+    try:
+        with open(file_path, 'r') as f:
+            lines = f.readlines()
+            for var in VARIABLES.copy():
+                for line in lines:
+                    if var in line:
+                        VARIABLES.remove(var)
+    except FileNotFoundError:
+        pass
+        
+    with open(file_path, 'a') as f:
+        for var in VARIABLES:
+            f.write(f'{var}={kwargs[var]}\n')
