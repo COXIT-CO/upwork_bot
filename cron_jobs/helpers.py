@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
@@ -35,9 +36,25 @@ def find_new_job_openings(opened_jobs, origin):
     return new_job_openings
 
 
-def remove_unactive_jobs_from_db(active_jobs, origin):
+def remove_unactive_jobs_from_db(active_jobs, origin, companies_with_active_jobs = None):
     with flask_app.app_context():
         db_jobs = JobModel.query.filter_by(origin=origin).all()
+    
+    
+    if origin == "linkedin":
+        for job in db_jobs:
+            job_url = job.job_url
+            for company in companies_with_active_jobs:
+                
+                pass
+
+        for job in db_jobs:
+            pass
+
+        for job_data in active_jobs:
+            if job_data["jobs"] == "error during scraping":
+                continue
+
 
     for job in db_jobs:
         url = job.job_url
@@ -97,3 +114,14 @@ def scroll_page_down(driver):
         if new_height == last_height:
             break
     time.sleep(1)
+
+
+def transform_company_title(title: str):
+    title = re.sub(r'[-.]', '', title.lower())
+    return title
+
+
+def extract_company_title_from_url(url: str):
+    url = url[:-1] if url.endswith("/") else url
+    title = url.replace('https://www.linkedin.com/company/', '').replace('http://www.linkedin.com/company/', '')
+    return title
