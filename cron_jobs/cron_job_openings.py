@@ -44,6 +44,9 @@ from cron_jobs.helpers import (
     find_new_job_openings,
     remove_unactive_jobs_from_db,
     remove_job_from_db,
+    delete_arg_from_file,
+    write_arg_to_env_file,
+    post_slack_message
 )
 
 slack_bot_app = App(
@@ -102,7 +105,7 @@ if jobs:
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Hey! I have new job openings for you :eyes:",
+                "text": "Hey! I have new *upwork* job openings for you :eyes:",
             },
         }
     ]
@@ -118,23 +121,11 @@ if jobs:
         ],
     }
     if len(str(jobs)) > 2000:
-        delete_jobs_from_env_file()
-        with open(level_up_directory_path + "/.env", "r") as file:
-            lines = file.readlines()
-        with open(level_up_directory_path + "/.env", "w") as file:
-            lines.append(f"JOBS={str(jobs)}\n")
-            file.writelines(lines)
+        delete_arg_from_file("JOBS", file_path=level_up_directory_path + "/.env")
+        write_arg_to_env_file("JOBS", jobs, file_path=level_up_directory_path + "/.env")
     else:
         modal_window["elements"][0]["value"] = str(jobs)
     blocks.append(modal_window)
-    for chan in channels:
-        response = slack_bot_app.client.chat_postMessage(
-            channel=chan, blocks=blocks, thread_ts=""
-        )
-        response_timestamp = response["ts"]
-        for err in encountered_errors:
-            slack_bot_app.client.chat_postMessage(
-                channel=chan, text=err, thread_ts=response_timestamp
-            )
+    post_slack_message(channels, slack_bot_app, blocks, encountered_errors)
 
 sys.path.pop(0)
