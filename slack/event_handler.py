@@ -101,14 +101,9 @@ def subscribe_linkedin(ack, body):
     write_variables_in_file(f"{ROOT_DIR}/.env", **args)
 
     # docker container binded code should provide full paths to interpreter and executables
-    # python_path = "/usr/local/bin/python"
-    # subprocess.Popen(
-    #     f"{python_path} /app/cron_jobs/linkedin_jobs_scraping.py",
-    #     shell=True,
-    # )
-    python_path = "/usr/bin/python"
+    python_path = "/usr/local/bin/python"
     subprocess.Popen(
-        f"{python_path} /home/sviddo/upwork_bot/cron_jobs/linkedin_jobs_scraping.py",
+        f"{python_path} /app/cron_jobs/linkedin_jobs_scraping.py",
         shell=True,
     )
 

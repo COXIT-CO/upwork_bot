@@ -1,9 +1,9 @@
 from app.app import flask_app
 from datetime import datetime
-from upwork_part.schema.controllers import JobController
-from upwork_part.schema.controllers import InvitationController
-from upwork_part.schema.models import Job as JobModel
-from upwork_part.schema.models import Invitation
+from db_schema.controllers import JobController
+from db_schema.controllers import InvitationController
+from db_schema.models import Job as JobModel
+from db_schema.models import Invitation
 
 job_controller = JobController()
 invitation_controller = InvitationController()
