@@ -27,10 +27,10 @@ for line in lines:
         os.environ["NOTION_TOKEN"] = line.split("=")[-1][:-1]
 
 
-from utils.db import find_new_job_openings, remove_unactive_jobs_from_db
-from utils.slack import post_slack_message
-from utils.file import delete_arg_from_file, write_arg_to_file
-from utils.linkedin import paginate_jobs, scroll_page_down, is_company_url_valid
+from helpers.db import find_new_job_openings, remove_unactive_jobs_from_db
+from helpers.slack import post_slack_message
+from helpers.file import delete_arg_from_file, write_arg_to_file
+from helpers.linkedin import paginate_jobs, scroll_page_down, is_company_url_valid
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -38,7 +38,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from slack_bolt import App
 from webdriver_manager.chrome import ChromeDriverManager
-from utils import linkedin
+from helpers import linkedin
 
 from notion.notion_table_scraper import scrape_notion_table
 

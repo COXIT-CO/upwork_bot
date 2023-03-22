@@ -7,13 +7,13 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).parent.parent.absolute()
 
 from slack.app import slack_bot_app
-from utils.file import (
+from helpers.file import (
     write_arg_to_file,
     delete_arg_from_file,
     get_arg_value_from_file,
     write_variables_in_file,
 )
-from utils.slack import build_blocks_given_job_openings, build_blocks_given_invitations
+from helpers.slack import build_blocks_given_job_openings, build_blocks_given_invitations
 
 
 # subscribe to receive new upwork job openings by provided url on notion table
@@ -101,9 +101,14 @@ def subscribe_linkedin(ack, body):
     write_variables_in_file(f"{ROOT_DIR}/.env", **args)
 
     # docker container binded code should provide full paths to interpreter and executables
-    python_path = "/usr/local/bin/python"
+    # python_path = "/usr/local/bin/python"
+    # subprocess.Popen(
+    #     f"{python_path} /app/cron_jobs/linkedin_jobs_scraping.py",
+    #     shell=True,
+    # )
+    python_path = "/usr/bin/python"
     subprocess.Popen(
-        f"{python_path} /app/cron_jobs/linkedin_jobs_scraping.py",
+        f"{python_path} /home/sviddo/upwork_bot/cron_jobs/linkedin_jobs_scraping.py",
         shell=True,
     )
 

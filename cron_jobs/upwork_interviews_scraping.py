@@ -29,7 +29,7 @@ for line in lines:
         os.environ["LOGIN_ANSWER"] = line.split("=")[-1][:-1]
 
 from bs4 import BeautifulSoup
-from utils.db import find_new_invitations, remove_unactive_invitations_from_db
+from helpers.db import find_new_invitations, remove_unactive_invitations_from_db
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys

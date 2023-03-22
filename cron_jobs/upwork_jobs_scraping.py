@@ -36,18 +36,18 @@ for line in lines:
         os.environ["REFRESH_TOKEN"] = line.split("=")[-1][:-1]
 
 
-from utils import exceptions
+from helpers import exceptions
 from slack_bolt import App
 from notion.notion_table_scraper import scrape_notion_table
 from upwork_part.upwork_integration import Job
 from upwork_part.upwork_integration import upwork_client
-from utils.db import (
+from helpers.db import (
     find_new_job_openings,
     remove_unactive_jobs_from_db,
     remove_job_from_db,
 )
-from utils.slack import post_slack_message
-from utils.file import delete_arg_from_file, write_arg_to_file
+from helpers.slack import post_slack_message
+from helpers.file import delete_arg_from_file, write_arg_to_file
 
 slack_bot_app = App(
     signing_secret=os.getenv("SLACK_SIGNING_SECRET"), token=os.getenv("SLACK_BOT_TOKEN")
