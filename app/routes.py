@@ -14,16 +14,16 @@ def slack_events():
     return handler.handle(request)
 
 
-@flask_app.route("/slack/subscribe", methods=["POST"])
-def slack_subscribe():
+@flask_app.route("/slack/subscribe_upwork", methods=["POST"])
+def slack_subscribe_upwork():
+    return handler.handle(request)
+
+
+@flask_app.route("/slack/subscribe_linkedin", methods=["POST"])
+def slack_subscribe_linkedin():
     return handler.handle(request)
 
 
 @flask_app.route("/slack/interactive", methods=["POST"])
-def abc():
-    return handler.handle(request)
-
-
-@flask_app.route("/slack/unsubscribe", methods=["POST"])
-def slack_unsubscribe():
+def handle_request():
     return handler.handle(request)

@@ -1,72 +1,54 @@
+"""all events when user wants to subscribe to receive new job openings or opens/interacts with modal windows in slack are handed here"""
 import ast
 import os
 import subprocess
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).parent.parent.absolute()
+
 from slack.app import slack_bot_app
-from slack.utils import build_blocks_given_job_openings, build_blocks_given_invitations, write_variables_in_file
+from utils.file import (
+    write_arg_to_file,
+    delete_arg_from_file,
+    get_arg_value_from_file,
+    write_variables_in_file,
+)
+from utils.slack import build_blocks_given_job_openings, build_blocks_given_invitations
 
 
-@slack_bot_app.command("/subscribe")
-def subscribe(ack, body):
+# subscribe to receive new upwork job openings by provided url on notion table
+@slack_bot_app.command("/subscribe_upwork")
+def subscribe_upwork(ack, body):
+    ack()
     channel_id = body["channel_id"]
-    notion_table_url = body["text"]
-    current_directory_path = os.path.dirname(os.path.abspath(__file__))
-    level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-    channels = [channel_id]
-    try:
-        with open(f"{level_up_directory_path}/.env", "r") as file:
-            lines = file.readlines()
-            for line in lines:
-                if "SLACK_CHANNEL_ID" in line:
-                    active_channels = ast.literal_eval(line.split("=")[-1][:-1])
-                    if channels[0] not in active_channels:
-                        channels += active_channels
-    except FileNotFoundError:
-        # do nothing if we subscribe for the first time
-        pass
+    upwork_table_url = body["text"]
 
-    try:
-        with open(f"{level_up_directory_path}/.env", "r") as file:
-            lines = file.readlines()
-            for line in lines:
-                if "JOBS" in line:
-                    jobs = line
-    except FileNotFoundError:
-        pass
+    slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
+    if slack_channels_data != {}:
+        slack_channels_data = slack_channels_data[20:-1]
+        slack_channels_data = ast.literal_eval(slack_channels_data)
+    channel_data = slack_channels_data.get(channel_id, {})
+    channel_data["upwork_table_url"] = upwork_table_url
+    slack_channels_data[channel_id] = channel_data
+    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
+    write_arg_to_file(
+        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
+    )
 
     args = {
-        'NOTION_TABLE_URL': notion_table_url,
-        'SLACK_CHANNEL_ID': str(channels),
-        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
-        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
-        'SLACK_BOT_TOKEN': os.getenv('SLACK_BOT_TOKEN'),
-        'CLIENT_ID': os.getenv('CLIENT_ID'),
-        'CLIENT_SECRET': os.getenv('CLIENT_SECRET'),
-        'CLIENT_EMAIL': os.getenv('CLIENT_EMAIL'),
-        'CLIENT_PASSWORD': os.getenv('CLIENT_PASSWORD'),
-        'REDIRECT_URI': os.getenv('REDIRECT_URI'),
-        'NOTION_TOKEN': os.getenv('NOTION_TOKEN'),
-        'REFRESH_TOKEN': os.getenv('REFRESH_TOKEN'),
-        'LOGIN_ANSWER': os.getenv('LOGIN_ANSWER')
+        "SLACK_CHANNELS_DATA": str(slack_channels_data),
+        "SLACK_SIGNING_SECRET": os.getenv("SLACK_SIGNING_SECRET"),
+        "SLACK_BOT_TOKEN": os.getenv("SLACK_BOT_TOKEN"),
+        "CLIENT_ID": os.getenv("CLIENT_ID"),
+        "CLIENT_SECRET": os.getenv("CLIENT_SECRET"),
+        "CLIENT_EMAIL": os.getenv("CLIENT_EMAIL"),
+        "CLIENT_PASSWORD": os.getenv("CLIENT_PASSWORD"),
+        "REDIRECT_URI": os.getenv("REDIRECT_URI"),
+        "NOTION_TOKEN": os.getenv("NOTION_TOKEN"),
+        "REFRESH_TOKEN": os.getenv("REFRESH_TOKEN"),
+        "LOGIN_ANSWER": os.getenv("LOGIN_ANSWER"),
     }
-    write_variables_in_file(f"{level_up_directory_path}/.env", **args)
-
-    # with open(f"{level_up_directory_path}/.env", "w") as file:
-    #     try:
-    #         file.write(jobs)
-    #     except NameError:
-    #         pass
-    #     file.write(f"NOTION_TABLE_URL={notion_table_url}\n")
-    #     file.write(f"SLACK_CHANNEL_ID={str(channels)}\n")
-    #     file.write(f"SLACK_SIGNING_SECRET={os.getenv('SLACK_SIGNING_SECRET')}\n")
-    #     file.write(f"SLACK_BOT_TOKEN={os.getenv('SLACK_BOT_TOKEN')}\n")
-    #     file.write(f"CLIENT_ID={os.getenv('CLIENT_ID')}\n")
-    #     file.write(f"CLIENT_SECRET={os.getenv('CLIENT_SECRET')}\n")
-    #     file.write(f"CLIENT_EMAIL={os.getenv('CLIENT_EMAIL')}\n")
-    #     file.write(f"CLIENT_PASSWORD={os.getenv('CLIENT_PASSWORD')}\n")
-    #     file.write(f"REDIRECT_URI={os.getenv('REDIRECT_URI')}\n")
-    #     file.write(f"NOTION_TOKEN={os.getenv('NOTION_TOKEN')}\n")
-    #     file.write(f"REFRESH_TOKEN={os.getenv('REFRESH_TOKEN')}\n")
-    #     file.write(f"LOGIN_ANSWER={os.getenv('LOGIN_ANSWER')}\n")
+    write_variables_in_file(f"{ROOT_DIR}/.env", **args)
 
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
@@ -82,111 +64,280 @@ def subscribe(ack, body):
         f"{python_path} /app/cron_jobs/cron_refresh_token.py",
         shell=True,
     )
-    ack()
 
 
+# subscribe to receive new linkedin job openings by provided url on notion table
 @slack_bot_app.command("/subscribe_linkedin")
-def subscribe(ack, body):
+def subscribe_linkedin(ack, body):
+    ack()
     channel_id = body["channel_id"]
     linkedin_table_url = body["text"]
-    current_directory_path = os.path.dirname(os.path.abspath(__file__))
-    level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-    channels = [channel_id]
-    try:
-        with open(f"{level_up_directory_path}/.env", "r") as file:
-            lines = file.readlines()
-            for line in lines:
-                if "SLACK_CHANNEL_ID" in line:
-                    active_channels = ast.literal_eval(line.split("=")[-1][:-1])
-                    if channels[0] not in active_channels:
-                        channels += active_channels
-    except FileNotFoundError:
-        # do nothing if we subscribe for the first time
-        pass
 
-    try:
-        with open(f"{level_up_directory_path}/.env", "r") as file:
-            lines = file.readlines()
-            for line in lines:
-                if "JOBS" in line:
-                    jobs = line
-    except FileNotFoundError:
-        pass
+    slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
+    if slack_channels_data != {}:
+        slack_channels_data = slack_channels_data[20:-1]
+        slack_channels_data = ast.literal_eval(slack_channels_data)
+    channel_data = slack_channels_data.get(channel_id, {})
+    channel_data["linkedin_table_url"] = linkedin_table_url
+    slack_channels_data[channel_id] = channel_data
+    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
+    write_arg_to_file(
+        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
+    )
 
     args = {
-        'LINKEDIN_TABLE_URL': linkedin_table_url,
-        'SLACK_CHANNEL_ID': str(channels),
-        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
-        'SLACK_SIGNING_SECRET': os.getenv('SLACK_SIGNING_SECRET'),
-        'SLACK_BOT_TOKEN': os.getenv('SLACK_BOT_TOKEN'),
-        'CLIENT_ID': os.getenv('CLIENT_ID'),
-        'CLIENT_SECRET': os.getenv('CLIENT_SECRET'),
-        'CLIENT_EMAIL': os.getenv('CLIENT_EMAIL'),
-        'CLIENT_PASSWORD': os.getenv('CLIENT_PASSWORD'),
-        'REDIRECT_URI': os.getenv('REDIRECT_URI'),
-        'NOTION_TOKEN': os.getenv('NOTION_TOKEN'),
-        'REFRESH_TOKEN': os.getenv('REFRESH_TOKEN'),
-        'LOGIN_ANSWER': os.getenv('LOGIN_ANSWER')
+        "SLACK_CHANNELS_DATA": str(slack_channels_data),
+        "SLACK_SIGNING_SECRET": os.getenv("SLACK_SIGNING_SECRET"),
+        "SLACK_BOT_TOKEN": os.getenv("SLACK_BOT_TOKEN"),
+        "CLIENT_ID": os.getenv("CLIENT_ID"),
+        "CLIENT_SECRET": os.getenv("CLIENT_SECRET"),
+        "CLIENT_EMAIL": os.getenv("CLIENT_EMAIL"),
+        "CLIENT_PASSWORD": os.getenv("CLIENT_PASSWORD"),
+        "REDIRECT_URI": os.getenv("REDIRECT_URI"),
+        "NOTION_TOKEN": os.getenv("NOTION_TOKEN"),
+        "REFRESH_TOKEN": os.getenv("REFRESH_TOKEN"),
+        "LOGIN_ANSWER": os.getenv("LOGIN_ANSWER"),
     }
-    write_variables_in_file(f"{level_up_directory_path}/.env", **args)
-
-    # with open(f"{level_up_directory_path}/.env", "w") as file:
-    #     try:
-    #         file.write(jobs)
-    #     except NameError:
-    #         pass
-    #     file.write(f"LINKEDIN_TABLE_URL={notion_table_url}\n")
-    #     file.write(f"SLACK_CHANNEL_ID={str(channels)}\n")
-    #     file.write(f"SLACK_SIGNING_SECRET={os.getenv('SLACK_SIGNING_SECRET')}\n")
-    #     file.write(f"SLACK_BOT_TOKEN={os.getenv('SLACK_BOT_TOKEN')}\n")
-    #     file.write(f"CLIENT_ID={os.getenv('CLIENT_ID')}\n")
-    #     file.write(f"CLIENT_SECRET={os.getenv('CLIENT_SECRET')}\n")
-    #     file.write(f"CLIENT_EMAIL={os.getenv('CLIENT_EMAIL')}\n")
-    #     file.write(f"CLIENT_PASSWORD={os.getenv('CLIENT_PASSWORD')}\n")
-    #     file.write(f"REDIRECT_URI={os.getenv('REDIRECT_URI')}\n")
-    #     file.write(f"NOTION_TOKEN={os.getenv('NOTION_TOKEN')}\n")
-    #     file.write(f"REFRESH_TOKEN={os.getenv('REFRESH_TOKEN')}\n")
-    #     file.write(f"LOGIN_ANSWER={os.getenv('LOGIN_ANSWER')}\n")
+    write_variables_in_file(f"{ROOT_DIR}/.env", **args)
 
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
     subprocess.Popen(
-        f"{python_path} /app/cron_jobs/cron_job_openings.py",
+        f"{python_path} /app/cron_jobs/linkedin2.py",
         shell=True,
     )
-    subprocess.Popen(
-        f"{python_path} /app/cron_jobs/cron_interview_updates.py",
-        shell=True,
-    )
-    subprocess.Popen(
-        f"{python_path} /app/cron_jobs/cron_refresh_token.py",
-        shell=True,
-    )
-    ack()
 
 
-@slack_bot_app.action("modal_window_handler")
-def handle_job_openings(ack, body, payload, client):
+# handler to open modal window on new upwork jobs
+@slack_bot_app.action("upwork_handler")
+def handle_upwork_job_openings(ack, body, payload, client):
     ack()
+    channel_id = body["container"]["channel_id"]
     if "value" in payload:
-        jobs_to_list = ast.literal_eval(payload["value"])
+        channel_jobs = ast.literal_eval(payload["value"])
     else:
-        current_directory_path = os.path.dirname(os.path.abspath(__file__))
-        level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
-        with open(level_up_directory_path + "/.env", "r") as file:
-            lines = file.readlines()
-        for line in lines:
-            if "JOBS" in line:
-                jobs = "".join(line)[5:-1]
-                jobs_to_list = ast.literal_eval(jobs)
+        slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
+        slack_channels_data = slack_channels_data[20:-1]
+        slack_channels_data = ast.literal_eval(slack_channels_data)
+
+        for chan in slack_channels_data:
+            if isinstance(chan, tuple):
+                chan_id = chan[0]
+                if channel_id == chan_id:
+                    channel_id = chan
+                    break
+            elif isinstance(chan, str):
+                channel_id = chan
                 break
+
+        channel_data = slack_channels_data[channel_id]
+        channel_jobs = channel_data["upwork_jobs"]
+
     client.views_open(
         trigger_id=body["trigger_id"],
         view={
             "type": "modal",
-            "callback_id": "modal_window_callback",
-            "title": {"type": "plain_text", "text": "New job openings"},
-            "blocks": build_blocks_given_job_openings(jobs_to_list),
+            "callback_id": "upwork_window_callback",
+            "title": {"type": "plain_text", "text": "Upwork job openings"},
+            "blocks": build_blocks_given_job_openings(channel_jobs, origin="upwork"),
+        },
+    )
+
+
+# handler to open modal window on new linkedin jobs
+@slack_bot_app.action("linkedin_handler")
+def handle_linkedin_job_openings(ack, body, payload, client):
+    ack()
+    channel_id = body["container"]["channel_id"]
+    if "value" in payload:
+        channel_jobs = ast.literal_eval(payload["value"])
+    else:
+        slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
+        slack_channels_data = slack_channels_data[20:-1]
+        slack_channels_data = ast.literal_eval(slack_channels_data)
+
+        for chan in slack_channels_data:
+            if isinstance(chan, tuple):
+                chan_id = chan[0]
+                if channel_id == chan_id:
+                    channel_id = chan
+                    break
+            elif isinstance(chan, str):
+                channel_id = chan
+                break
+
+        channel_data = slack_channels_data[channel_id]
+        channel_jobs = channel_data["linkedin_jobs"]
+
+    page = int(channel_data["current_linkedin_jobs_page"])
+
+    blocks = build_blocks_given_job_openings(channel_jobs, origin="linkedin", page=page)
+    elements = []
+    if len(channel_jobs) > 1:
+        elements.append(
+            {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "next"},
+                "style": "primary",
+                "action_id": "next_page",
+                "value": "my_data",
+            }
+        )
+    if page > 0:
+        elements.insert(
+            0,
+            {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "previous"},
+                "style": "danger",
+                "action_id": "previous_page",
+                "value": "my_data",
+            },
+        )
+    blocks.append({"type": "actions", "elements": elements})
+    response = client.views_open(
+        trigger_id=body["trigger_id"],
+        view={
+            "type": "modal",
+            "callback_id": "linkedin_window_callback",
+            "title": {"type": "plain_text", "text": "LinkedIn job openings"},
+            "blocks": blocks,
+        },
+    )
+    if isinstance(channel_id, str):
+        del slack_channels_data[channel_id]
+        channel_id = (channel_id, response["view"]["id"])
+    elif isinstance(channel_id, tuple):
+        view_id = response["view"]["id"]
+        if view_id != channel_id[1]:
+            del slack_channels_data[channel_id]
+        channel_id = (channel_id[0], view_id)
+    slack_channels_data[channel_id] = channel_data
+    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
+    write_arg_to_file(
+        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
+    )
+
+
+@slack_bot_app.action("previous_page")
+def handle_previous_page(ack, body, client):
+    ack()
+    view_id = body["container"]["view_id"]
+
+    slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
+    slack_channels_data = slack_channels_data[20:-1]
+    slack_channels_data = ast.literal_eval(slack_channels_data)
+    for chan in slack_channels_data:
+        if isinstance(chan, tuple):
+            chan_view_id = chan[1]
+            if view_id == chan_view_id:
+                break
+    channel_data = slack_channels_data[chan]
+    page = int(channel_data["current_linkedin_jobs_page"])
+    page = 0 if page - 1 < 0 else page - 1
+
+    channel_data["current_linkedin_jobs_page"] = page
+    slack_channels_data[chan] = channel_data
+
+    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
+    write_arg_to_file(
+        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
+    )
+
+    jobs_to_display = [channel_data["linkedin_jobs"][page]]
+
+    blocks = build_blocks_given_job_openings(jobs_to_display, origin="linkedin")
+    elements = [
+        {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "next"},
+            "style": "primary",
+            "action_id": "next_page",
+            "value": "my_data",
+        }
+    ]
+    if page > 0:
+        elements.insert(
+            0,
+            {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "previous"},
+                "style": "danger",
+                "action_id": "previous_page",
+                "value": "my_data",
+            },
+        )
+    blocks.append({"type": "actions", "elements": elements})
+    view_id = body["container"]["view_id"]
+    client.views_update(
+        view_id=view_id,
+        view={
+            "type": "modal",
+            "callback_id": "linkedin_window_callback",
+            "title": {"type": "plain_text", "text": "LinkedIn job openings"},
+            "blocks": blocks,
+        },
+    )
+
+
+@slack_bot_app.action("next_page")
+def handle_next_page(ack, body, client):
+    ack()
+    view_id = body["container"]["view_id"]
+
+    slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
+    slack_channels_data = slack_channels_data[20:-1]
+    slack_channels_data = ast.literal_eval(slack_channels_data)
+    for chan in slack_channels_data:
+        if isinstance(chan, tuple):
+            chan_view_id = chan[1]
+            if view_id == chan_view_id:
+                break
+    channel_data = slack_channels_data[chan]
+    page = int(channel_data["current_linkedin_jobs_page"])
+
+    page = (
+        page + 1
+        if page < len(channel_data["linkedin_jobs"]) - 1
+        else len(channel_data["linkedin_jobs"]) - 1
+    )
+    channel_data["current_linkedin_jobs_page"] = page
+    slack_channels_data[chan] = channel_data
+    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
+    write_arg_to_file(
+        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
+    )
+    jobs_to_display = [channel_data["linkedin_jobs"][page]]
+
+    blocks = build_blocks_given_job_openings(jobs_to_display, origin="linkedin")
+    elements = [
+        {
+            "type": "button",
+            "text": {"type": "plain_text", "text": "previous"},
+            "style": "danger",
+            "action_id": "previous_page",
+            "value": "my_data",
+        }
+    ]
+    if page < len(channel_data["linkedin_jobs"]) - 1:
+        elements.append(
+            {
+                "type": "button",
+                "text": {"type": "plain_text", "text": "next"},
+                "style": "primary",
+                "action_id": "next_page",
+                "value": "my_data",
+            }
+        )
+    blocks.append({"type": "actions", "elements": elements})
+    view_id = body["container"]["view_id"]
+    client.views_update(
+        view_id=view_id,
+        view={
+            "type": "modal",
+            "callback_id": "linkedin_window_callback",
+            "title": {"type": "plain_text", "text": "LinkedIn job openings"},
+            "blocks": blocks,
         },
     )
 

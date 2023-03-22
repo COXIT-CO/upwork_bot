@@ -1,13 +1,15 @@
 import os
 import selenium.common.exceptions
 import sys
+from pathlib import Path
 
+ROOT_DIR = Path(__file__).parent.parent.absolute()
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 
 sys.path.insert(0, level_up_directory_path)
 
-with open(level_up_directory_path + "/.env", "r") as file:
+with open(f"{ROOT_DIR}/.env", "r") as file:
     lines = file.readlines()
 
 for line in lines:
@@ -144,12 +146,12 @@ WebDriverWait(driver, 90).until(
 
 token_data = dict(client.get_access_token(driver.current_url))
 
-with open(level_up_directory_path + "/.env", "r") as file:
+with open(f"{ROOT_DIR}/.env", "r") as file:
     lines = file.readlines()
 
 filtered_lines = [line for line in lines if "REFRESH_TOKEN" not in line]
 
-with open(level_up_directory_path + "/.env", "w") as file:
+with open(f"{ROOT_DIR}/.env", "w") as file:
     file.writelines(filtered_lines)
     file.write(f"REFRESH_TOKEN={token_data['refresh_token']}\n")
 

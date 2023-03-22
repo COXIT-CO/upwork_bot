@@ -8,7 +8,7 @@ level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 sys.path.insert(0, level_up_directory_path)
 
 import pytest
-from helpers import exceptions
+from utils import exceptions
 from upwork_part.upwork_integration import UpworkClient, Job
 
 UPWORK_CLIENT_ID = os.getenv("CLIENT_ID")

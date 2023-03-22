@@ -1,7 +1,7 @@
 import validators
 import os
 from notion_database.database import Database
-from helpers.exceptions import CustomException
+from utils.exceptions import CustomException
 
 
 def scrape_notion_table(notion_page_url: str):

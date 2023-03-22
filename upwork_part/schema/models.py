@@ -1,4 +1,5 @@
 from app.database import DB
+from datetime import datetime
 
 
 class Job(DB.Model):
@@ -7,8 +8,11 @@ class Job(DB.Model):
     id = DB.Column(DB.Integer, primary_key=True)
     # having generic url https://www.upwork.com/jobs/~016b4000a5635eebbe
     # we will save 016b4000a5635eebbe part as job id
+    slack_channel_id = DB.Column(DB.Text)
     job_url = DB.Column(DB.Text, unique=True)
     origin = DB.Column(DB.String(20))
+    company = DB.Column(DB.String(20), nullable=True)
+    creation_time = DB.Column(DB.Date, nullable=True, default=datetime.utcnow().date())
 
     def save(self):
         DB.session.add(self)
@@ -23,6 +27,7 @@ class Invitation(DB.Model):
     __tablename__ = "invitations"
 
     id = DB.Column(DB.Integer, primary_key=True)
+    slack_channel_id = DB.Column(DB.Text, unique=True)
     url = DB.Column(DB.String(70), unique=True)
 
     def save(self):

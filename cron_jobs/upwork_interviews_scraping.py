@@ -2,18 +2,21 @@ import ast
 import os
 import selenium.common.exceptions
 import sys
+from pathlib import Path
 
+ROOT_DIR = Path(__file__).parent.parent.absolute()
 current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 
 sys.path.insert(0, level_up_directory_path)
 
-with open(f"{level_up_directory_path}/.env", "r") as file:
+with open(f"{ROOT_DIR}/.env", "r") as file:
     lines = file.readlines()
 
 for line in lines:
-    if "SLACK_CHANNEL_ID" in line:
-        channels = ast.literal_eval(line.split("=")[-1][:-1])
+    if "SLACK_CHANNELS_DATA" in line:
+        slack_channels_data = ast.literal_eval(line[20:-1])
+        channels = [chan for chan in slack_channels_data]
     elif "CLIENT_EMAIL" in line:
         os.environ["CLIENT_EMAIL"] = line.split("=")[-1][:-1]
     elif "CLIENT_PASSWORD" in line:
@@ -26,7 +29,7 @@ for line in lines:
         os.environ["LOGIN_ANSWER"] = line.split("=")[-1][:-1]
 
 from bs4 import BeautifulSoup
-from cron_jobs.helpers import find_new_invitations, remove_unactive_invitations_from_db
+from utils.db import find_new_invitations, remove_unactive_invitations_from_db
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
