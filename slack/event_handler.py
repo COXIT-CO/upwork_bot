@@ -53,15 +53,15 @@ def subscribe_upwork(ack, body):
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
     subprocess.Popen(
-        f"{python_path} /app/cron_jobs/cron_job_openings.py",
+        f"{python_path} /app/cron_jobs/upwork_jobs_scraping.py",
         shell=True,
     )
     subprocess.Popen(
-        f"{python_path} /app/cron_jobs/cron_interview_updates.py",
+        f"{python_path} /app/cron_jobs/upwork_interviews_scraping.py",
         shell=True,
     )
     subprocess.Popen(
-        f"{python_path} /app/cron_jobs/cron_refresh_token.py",
+        f"{python_path} /app/cron_jobs/refresh_upwork_token.py",
         shell=True,
     )
 
@@ -103,7 +103,7 @@ def subscribe_linkedin(ack, body):
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
     subprocess.Popen(
-        f"{python_path} /app/cron_jobs/linkedin2.py",
+        f"{python_path} /app/cron_jobs/linkedin_jobs_scraping.py",
         shell=True,
     )
 
