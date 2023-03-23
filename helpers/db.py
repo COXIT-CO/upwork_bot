@@ -14,7 +14,7 @@ def find_new_job_openings(slack_channel_id, opened_jobs, origin):
     for job in opened_jobs:
         job_url = job["job_url"]
         with flask_app.app_context():
-            job_object = job_controller.get(job_url)
+            job_object = job_controller.get(slack_channel_id, job_url)
         if not job_object:
             # job is new, so save it to db
             with flask_app.app_context():
@@ -23,9 +23,11 @@ def find_new_job_openings(slack_channel_id, opened_jobs, origin):
     return new_job_openings
 
 
-def remove_unactive_jobs_from_db(companies_data, origin):
+def remove_unactive_jobs_from_db(slack_channel_id, companies_data, origin):
     with flask_app.app_context():
-        db_jobs = JobModel.query.filter_by(origin=origin).all()
+        db_jobs = JobModel.query.filter_by(
+            slack_channel_id=slack_channel_id, origin=origin
+        ).all()
 
     for job in db_jobs:
         url = job.job_url
@@ -41,19 +43,19 @@ def remove_unactive_jobs_from_db(companies_data, origin):
                 and (datetime.utcnow().date() - job.creation_time).days >= 3
             ):
                 with flask_app.app_context():
-                    job_controller.delete(url)
+                    job_controller.delete(slack_channel_id, url)
         else:
             if not is_job_available:
                 with flask_app.app_context():
-                    job_controller.delete(url)
+                    job_controller.delete(slack_channel_id, url)
 
 
-def remove_job_from_db(job_url: str):
+def remove_job_from_db(slack_channel_id, job_url: str):
     with flask_app.app_context():
-        return job_controller.delete(job_url)
+        return job_controller.delete(slack_channel_id, job_url)
 
 
-def find_new_invitations(slack_channel_id, invitations):
+def find_new_invitations(invitations):
     new_invitations = []
     for inv in invitations:
         invitation_link = inv["link"]
@@ -62,7 +64,7 @@ def find_new_invitations(slack_channel_id, invitations):
         if not invitation:
             # invitation is new, so save it to db
             with flask_app.app_context():
-                invitation_controller.create(slack_channel_id, invitation_link)
+                invitation_controller.create(invitation_link)
             new_invitations.append(inv)
     return new_invitations
 

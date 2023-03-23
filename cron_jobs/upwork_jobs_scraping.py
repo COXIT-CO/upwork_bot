@@ -57,8 +57,18 @@ slack_bot_app = App(
 upwork_client.refresh_access_token_data()
 
 for chan in channels:
+    channel_lookup_key = chan
+    if isinstance(chan, tuple):
+        channel_lookup_key = chan[0]
+    elif isinstance(chan, str):
+        channel_lookup_key = chan
     encountered_errors = []
-    projects_data = scrape_notion_table(slack_channels_data[chan]["upwork_table_url"])
+    try:
+        projects_data = scrape_notion_table(
+            slack_channels_data[chan]["upwork_table_url"]
+        )
+    except KeyError:
+        continue
     jobs = []
     active_jobs = []
     for job_data in projects_data:
@@ -73,14 +83,14 @@ for chan in channels:
             other_opened_jobs = serialized_job_info["other_opened_jobs"]
             # remove origin job from database as it doesn't have other jobs opened
             if len(other_opened_jobs) == 0:
-                remove_job_from_db(job_url)
+                remove_job_from_db(channel_lookup_key, job_url)
             else:
                 active_jobs.append(job_url)
                 for job in other_opened_jobs:
                     active_jobs.append(job["job_url"])
 
                 new_job_openings = find_new_job_openings(
-                    chan, other_opened_jobs, origin="upwork"
+                    channel_lookup_key, other_opened_jobs, origin="upwork"
                 )
                 if len(new_job_openings):
                     # new job openings appeared for origin one
@@ -90,7 +100,7 @@ for chan in channels:
             encountered_errors.append(str(exc))
 
     # if client doesn't have a job or some jobs anymore remove it from DB
-    remove_unactive_jobs_from_db(active_jobs, origin="upwork")
+    remove_unactive_jobs_from_db(channel_lookup_key, active_jobs, origin="upwork")
 
     if jobs:
         blocks = [
@@ -118,7 +128,9 @@ for chan in channels:
         else:
             modal_window["elements"][0]["value"] = str(jobs)
         blocks.append(modal_window)
-        post_slack_message(chan, slack_bot_app, blocks, encountered_errors)
+        post_slack_message(
+            channel_lookup_key, slack_bot_app, blocks, encountered_errors
+        )
 
 delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
 write_arg_to_file(

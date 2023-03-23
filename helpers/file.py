@@ -5,10 +5,10 @@ ROOT_DIR = Path(__file__).parent.parent.absolute()
 
 def write_arg_to_file(arg_name, data_to_write, file_path):
     try:
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             pass
     except FileNotFoundError:
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             pass
 
     with open(file_path, "r") as file:

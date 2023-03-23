@@ -145,7 +145,7 @@ def extract_company_jobs(driver: webdriver.Chrome):
             By.XPATH, "//div[@class='jobs-search-results-list\n    \n    ']"
         )
         # scroll the div elements with jobs listing slowly to let all li elements be populated with job link and title
-        for _ in range(10):
+        for _ in range(15):
             driver.execute_script(
                 "arguments[0].scrollTop += 500;", active_page_jobs_div_elem
             )
@@ -279,22 +279,30 @@ stealth(
     fix_hairline=True,
 )
 
-LINKEDIN_ACCOUNTS = {"lnkdnjobextract@gmail.com": "m@PNfFPP2hSTdAWv"}
+LINKEDIN_ACCOUNTS = {
+    "lnkdnjobextract@gmail.com": "m@PNfFPP2hSTdAWv",
+    "lnkdnjobextract3@gmail.com": "m@PNfFPP2hSTdAWv",
+}
 
 for chan in channels:
+    channel_lookup_key = chan
+    if isinstance(chan, tuple):
+        channel_lookup_key = chan[0]
+    elif isinstance(chan, str):
+        channel_lookup_key = chan
     encountered_errors = []
     companies_data = []
 
     projects_data = scrape_notion_table(slack_channels_data[chan]["linkedin_table_url"])
     for company_data in projects_data:
+        url = company_data["url"]
+        if not is_company_url_valid(url):
+            encountered_errors.append(
+                f"{url} doesn't look like pattern http://www.linkedin.com/company/ + company name"
+            )
+            continue
+        title = company_data["title"]
         for email, password in LINKEDIN_ACCOUNTS.items():
-            url = company_data["url"]
-            if not is_company_url_valid(url):
-                encountered_errors.append(
-                    f"{url} doesn't look like pattern http://www.linkedin.com/company/ + company name"
-                )
-                continue
-            title = company_data["title"]
             company_jobs = scrape_linkedin_without_authentication(driver, url)
             if company_jobs == "":
                 company_jobs = scrape_linkedin_with_authentication(
@@ -303,7 +311,7 @@ for chan in channels:
             if company_jobs == "":
                 continue
             new_company_jobs = find_new_job_openings(
-                chan, company_jobs, origin="linkedin"
+                channel_lookup_key, company_jobs, origin="linkedin"
             )
             if new_company_jobs != "":
                 companies_data.append(
@@ -316,7 +324,7 @@ for chan in channels:
             break
 
     splitted_jobs = paginate_jobs(companies_data)
-    remove_unactive_jobs_from_db(companies_data, origin="linkedin")
+    remove_unactive_jobs_from_db(channel_lookup_key, companies_data, origin="linkedin")
 
     are_there_new_jobs = False
     for item in splitted_jobs:
@@ -355,11 +363,12 @@ for chan in channels:
         else:
             modal_window["elements"][0]["value"] = str(splitted_jobs)
         blocks.append(modal_window)
-        post_slack_message(chan, slack_bot_app, blocks, encountered_errors)
+        post_slack_message(
+            channel_lookup_key, slack_bot_app, blocks, encountered_errors
+        )
 
 delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
 write_arg_to_file(
     "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
 )
-
 sys.path.pop(0)

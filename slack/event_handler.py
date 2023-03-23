@@ -29,9 +29,18 @@ def subscribe_upwork(ack, body):
     if slack_channels_data != {}:
         slack_channels_data = slack_channels_data[20:-1]
         slack_channels_data = ast.literal_eval(slack_channels_data)
+    for chan in slack_channels_data:
+        if isinstance(chan, tuple):
+            if channel_id == chan[0]:
+                channel_id = chan
+                break
+        elif isinstance(chan, str):
+            channel_id = chan
+            break
     channel_data = slack_channels_data.get(channel_id, {})
     channel_data["upwork_table_url"] = upwork_table_url
     slack_channels_data[channel_id] = channel_data
+    print(slack_channels_data)
 
     args = {
         "SLACK_CHANNELS_DATA": str(slack_channels_data),
@@ -76,6 +85,14 @@ def subscribe_linkedin(ack, body):
     if slack_channels_data != {}:
         slack_channels_data = slack_channels_data[20:-1]
         slack_channels_data = ast.literal_eval(slack_channels_data)
+    for chan in slack_channels_data:
+        if isinstance(chan, tuple):
+            if channel_id == chan[0]:
+                channel_id = chan
+                break
+        elif isinstance(chan, str):
+            channel_id = chan
+            break
     channel_data = slack_channels_data.get(channel_id, {})
     channel_data["linkedin_table_url"] = linkedin_table_url
     slack_channels_data[channel_id] = channel_data
@@ -113,6 +130,7 @@ def handle_upwork_job_openings(ack, body, payload, client):
         channel_jobs = ast.literal_eval(payload["value"])
     else:
         slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
+        print(slack_channels_data)
         slack_channels_data = slack_channels_data[20:-1]
         slack_channels_data = ast.literal_eval(slack_channels_data)
 
@@ -154,8 +172,7 @@ def handle_linkedin_job_openings(ack, body, payload, client):
 
         for chan in slack_channels_data:
             if isinstance(chan, tuple):
-                chan_id = chan[0]
-                if channel_id == chan_id:
+                if channel_id == chan[0]:
                     channel_id = chan
                     break
             elif isinstance(chan, str):
@@ -165,32 +182,36 @@ def handle_linkedin_job_openings(ack, body, payload, client):
         channel_data = slack_channels_data[channel_id]
         channel_jobs = channel_data["linkedin_jobs"]
 
-    page = int(channel_data["current_linkedin_jobs_page"])
+    try:
+        page = int(channel_data["current_linkedin_jobs_page"])
+    except UnboundLocalError:
+        page = None
 
     blocks = build_blocks_given_job_openings(channel_jobs, origin="linkedin", page=page)
     elements = []
-    if len(channel_jobs) > 1 and page < len(channel_jobs) - 1:
-        elements.append(
-            {
-                "type": "button",
-                "text": {"type": "plain_text", "text": "next"},
-                "style": "primary",
-                "action_id": "next_page",
-                "value": "my_data",
-            }
-        )
-    if page > 0:
-        elements.insert(
-            0,
-            {
-                "type": "button",
-                "text": {"type": "plain_text", "text": "previous"},
-                "style": "danger",
-                "action_id": "previous_page",
-                "value": "my_data",
-            },
-        )
-    blocks.append({"type": "actions", "elements": elements})
+    if page is not None:
+        if len(channel_jobs) > 1 and page < len(channel_jobs) - 1:
+            elements.append(
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "next"},
+                    "style": "primary",
+                    "action_id": "next_page",
+                    "value": "my_data",
+                }
+            )
+        if page > 0:
+            elements.insert(
+                0,
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "previous"},
+                    "style": "danger",
+                    "action_id": "previous_page",
+                    "value": "my_data",
+                },
+            )
+        blocks.append({"type": "actions", "elements": elements})
     response = client.views_open(
         trigger_id=body["trigger_id"],
         view={
@@ -200,19 +221,22 @@ def handle_linkedin_job_openings(ack, body, payload, client):
             "blocks": blocks,
         },
     )
-    if isinstance(channel_id, str):
-        del slack_channels_data[channel_id]
-        channel_id = (channel_id, response["view"]["id"])
-    elif isinstance(channel_id, tuple):
-        view_id = response["view"]["id"]
-        if view_id != channel_id[1]:
+    try:
+        if isinstance(channel_id, str):
             del slack_channels_data[channel_id]
-        channel_id = (channel_id[0], view_id)
-    slack_channels_data[channel_id] = channel_data
-    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
-    write_arg_to_file(
-        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
-    )
+            channel_id = (channel_id, response["view"]["id"])
+        elif isinstance(channel_id, tuple):
+            view_id = response["view"]["id"]
+            if view_id != channel_id[1]:
+                del slack_channels_data[channel_id]
+            channel_id = (channel_id[0], view_id)
+        slack_channels_data[channel_id] = channel_data
+        delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
+        write_arg_to_file(
+            "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
+        )
+    except UnboundLocalError:
+        pass
 
 
 @slack_bot_app.action("previous_page")

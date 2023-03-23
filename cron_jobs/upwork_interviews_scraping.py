@@ -170,6 +170,14 @@ blocks = [
 
 if len(new_invitations) != 0:
     for chan in channels:
-        slack_bot_app.client.chat_postMessage(channel=chan, blocks=blocks)
+        if "upwork_jobs" in slack_channels_data[chan]:
+            channel_lookup_key = chan
+            if isinstance(chan, tuple):
+                channel_lookup_key = chan[0]
+            elif isinstance(chan, str):
+                channel_lookup_key = chan
+            slack_bot_app.client.chat_postMessage(
+                channel=channel_lookup_key, blocks=blocks
+            )
 
 sys.path.pop(0)
