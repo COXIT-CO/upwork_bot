@@ -169,7 +169,7 @@ def handle_linkedin_job_openings(ack, body, payload, client):
 
     blocks = build_blocks_given_job_openings(channel_jobs, origin="linkedin", page=page)
     elements = []
-    if len(channel_jobs) > 1:
+    if len(channel_jobs) > 1 and page < len(channel_jobs) - 1:
         elements.append(
             {
                 "type": "button",

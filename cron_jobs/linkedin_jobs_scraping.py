@@ -12,7 +12,7 @@ level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 
 sys.path.insert(0, level_up_directory_path)
 
-with open(f"{level_up_directory_path}/.env", "r") as file:
+with open(f"{ROOT_DIR}/.env", "r") as file:
     lines = file.readlines()
 
 for line in lines:
