@@ -27,7 +27,7 @@ class Invitation(DB.Model):
     __tablename__ = "invitations"
 
     id = DB.Column(DB.Integer, primary_key=True)
-    slack_channel_id = DB.Column(DB.Text, unique=True)
+    slack_channel_id = DB.Column(DB.Text)
     url = DB.Column(DB.String(70), unique=True)
 
     def save(self):

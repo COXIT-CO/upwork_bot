@@ -1,6 +1,6 @@
 if __name__ == "__main__":
     from .routes import flask_app
-    from upwork_part.schema.models import Job
+    from db_schema.models import Job
     from .database import DB
 
     with flask_app.app_context():

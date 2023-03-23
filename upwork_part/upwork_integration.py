@@ -13,7 +13,7 @@ level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 import sys
 
 sys.path.insert(0, level_up_directory_path)
-from utils import exceptions
+from helpers import exceptions
 
 LOGGER = logging.getLogger()
 

@@ -1,5 +1,6 @@
 import dotenv
 import os
+import pytest
 import sys
 
 dotenv.load_dotenv(".env")
@@ -7,8 +8,7 @@ current_directory_path = os.path.dirname(os.path.abspath(__file__))
 level_up_directory_path = "/".join(current_directory_path.split("/")[:-1])
 sys.path.insert(0, level_up_directory_path)
 
-import pytest
-from utils import exceptions
+from helpers import exceptions
 from upwork_part.upwork_integration import UpworkClient, Job
 
 UPWORK_CLIENT_ID = os.getenv("CLIENT_ID")

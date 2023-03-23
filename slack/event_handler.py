@@ -11,9 +11,11 @@ from helpers.file import (
     write_arg_to_file,
     delete_arg_from_file,
     get_arg_value_from_file,
-    write_variables_in_file,
 )
-from helpers.slack import build_blocks_given_job_openings, build_blocks_given_invitations
+from helpers.slack import (
+    build_blocks_given_job_openings,
+    build_blocks_given_invitations,
+)
 
 
 # subscribe to receive new upwork job openings by provided url on notion table
@@ -30,10 +32,6 @@ def subscribe_upwork(ack, body):
     channel_data = slack_channels_data.get(channel_id, {})
     channel_data["upwork_table_url"] = upwork_table_url
     slack_channels_data[channel_id] = channel_data
-    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
-    write_arg_to_file(
-        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
-    )
 
     args = {
         "SLACK_CHANNELS_DATA": str(slack_channels_data),
@@ -48,7 +46,8 @@ def subscribe_upwork(ack, body):
         "REFRESH_TOKEN": os.getenv("REFRESH_TOKEN"),
         "LOGIN_ANSWER": os.getenv("LOGIN_ANSWER"),
     }
-    write_variables_in_file(f"{ROOT_DIR}/.env", **args)
+    for arg, value in args.items():
+        write_arg_to_file(arg, value, file_path=f"{ROOT_DIR}/.env")
 
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
@@ -80,10 +79,6 @@ def subscribe_linkedin(ack, body):
     channel_data = slack_channels_data.get(channel_id, {})
     channel_data["linkedin_table_url"] = linkedin_table_url
     slack_channels_data[channel_id] = channel_data
-    delete_arg_from_file("SLACK_CHANNELS_DATA", file_path=f"{ROOT_DIR}/.env")
-    write_arg_to_file(
-        "SLACK_CHANNELS_DATA", slack_channels_data, file_path=f"{ROOT_DIR}/.env"
-    )
 
     args = {
         "SLACK_CHANNELS_DATA": str(slack_channels_data),
@@ -98,7 +93,8 @@ def subscribe_linkedin(ack, body):
         "REFRESH_TOKEN": os.getenv("REFRESH_TOKEN"),
         "LOGIN_ANSWER": os.getenv("LOGIN_ANSWER"),
     }
-    write_variables_in_file(f"{ROOT_DIR}/.env", **args)
+    for arg, value in args.items():
+        write_arg_to_file(arg, value, file_path=f"{ROOT_DIR}/.env")
 
     # docker container binded code should provide full paths to interpreter and executables
     python_path = "/usr/local/bin/python"
