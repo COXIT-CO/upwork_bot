@@ -135,7 +135,7 @@ As you can see we need to visit a link. There you need to grant press "Grant Acc
 
 ![image](https://user-images.githubusercontent.com/85521093/227498487-b52ada53-b88e-4fbf-9c8e-b3449f544e46.png)
 
-That's exactly what we need to be **REFRESH_TOKEN** credential. The **LOGIN_ANSWER** one should be an answer to a secret question when you try to authenticate on Upwork:
+That's exactly what we need to be **REFRESH_TOKEN** credential. The **LOGIN_ANSWER** one should be an empty string or an answer to a secret question when you try to authenticate on Upwork:
 
 ![image](https://user-images.githubusercontent.com/85521093/227499162-c4b19d93-ef38-47d3-a50e-fd7481126cd5.png)
 
