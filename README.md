@@ -89,6 +89,48 @@ Here you see a navigation bar, I will refer to its items as text enclosed in dou
     - Go to "App Home" and just switch on everything as shown here:
     
     ![image](https://user-images.githubusercontent.com/85521093/227490016-f655444a-8648-432c-ba6c-d195a1670a7e.png) ![image](https://user-images.githubusercontent.com/85521093/227490122-4a6fc00e-9683-4760-9b32-d68c7db6ab39.png)
+    
+    - Go to "OAuth & Permissions". Scroll a bit down and set these scopes:
+    
+    ![image](https://user-images.githubusercontent.com/85521093/227491304-0aea0187-0a67-4abb-80f0-44aba9fa8c55.png) ![image](https://user-images.githubusercontent.com/85521093/227491357-1e625662-ba05-41ac-bd7c-3995c5592835.png)
+
+    - Go to "Basic Information" and generate App Level Token:
+    
+    ![image](https://user-images.githubusercontent.com/85521093/227491804-34e1447c-f392-4b7f-935d-13f829a3cb95.png)
+    
+    giving it **connections:write** scope:
+    
+    ![image](https://user-images.githubusercontent.com/85521093/227492094-3d9366c5-6d27-40d4-baaa-0a89d230887b.png)
+    
+    Now install your app to workspace:
+    
+    ![image](https://user-images.githubusercontent.com/85521093/227492363-6fabd049-7bdd-48fb-8eca-6fcfa4cb68e4.png)
+
+Now go to "Oauth & Permissions" and copy **Bot User OAuth Token**:
+
+![image](https://user-images.githubusercontent.com/85521093/227492962-44f1f3ea-fe0f-436f-9b61-c82a261540f1.png)
+
+**We need it for docker build stage**. On "Basic Information" copy "Signing Secret":
+
+![image](https://user-images.githubusercontent.com/85521093/227493707-83d3807f-71a6-4a4b-a3ef-d0bf861c44f7.png)
+
+**We need it for docker build stage as well**
+
+<h3>Upwork</h3>
+
+For Upwork we need to obtain 6 credentials: **CLIENT_ID**, **CLIENT_SECRET**, **CLIENT_EMAIL**, **CLIENT_PASSWORD**, **REDIRECT_URI** and **REFRESH_TOKEN**. First 5 of them you should get from a client. I will tell how to get last one. I helpers folder you see module called **get_upwork_access_token.py**. For this time you should log in Upwork, go to terminal and execute ```python get_upwork_access_token.py```:
+
+![image](https://user-images.githubusercontent.com/85521093/227498050-6d296c1c-bf89-4786-bc33-69f1d86001e1.png)
+
+As you can see we need to visit a link. There you need to grant press "Grant Access" button in case the window with poped up. Now you see the link has been dynamically changed, so copy it and paste back in terminal, then press Return key and you will get a dictionary with **refresh_token** field:
+
+![image](https://user-images.githubusercontent.com/85521093/227498487-b52ada53-b88e-4fbf-9c8e-b3449f544e46.png)
+
+That's exactly what we need
+
+
+
+Congrats!!! We finished with setuping our platrorms. As for now you have to posess 3 credentials 
 
 
 
