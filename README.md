@@ -74,8 +74,23 @@ Here you see a navigation bar, I will refer to its items as text enclosed in dou
 ![image](https://user-images.githubusercontent.com/85521093/227484615-07ebf8f9-4458-4d7c-9071-dc38be89b288.png)
 
 2. Once you've come with working app we need to set it right:
+    - Go to "Interactivity & Shortcuts" and toggle on the switch. In the **Request URL** field you should paste you domain name + '/slack/interactive'. E.g. **https://8f76-91-214-209-68.eu.ngrok.io/slack/interactive** (I use ngrok for local development):
     - 
+    ![image](https://user-images.githubusercontent.com/85521093/227486545-332d2515-2e8f-4f72-a7a8-4ceeff1cd145.png)
+
+    - Go to "Slash Commands". Here we need to create 2 commands: **/subscribe_upwork** and **/subscribe_linkedin**. For each command the **Request URL** field should be your domain name + **/slack/<command_name>**. E.g. **https://8f76-91-214-209-68.eu.ngrok.io/slack/subscribe_upwork** and **https://8f76-91-214-209-68.eu.ngrok.io/slack/subscribe_linkedin**:
+
+    ![image](https://user-images.githubusercontent.com/85521093/227488296-7f3e9866-17b8-4bea-bdcc-f24a3a26e620.png) ![image](https://user-images.githubusercontent.com/85521093/227488440-82fcfa06-2474-4366-ba40-dadbca4e73e4.png)
+    
+    - Go to "Event Subscriptions". Toogle on the switch. In **Request URL** field paste your domain name + **/slack/events**. Then scroll a bit down and reproduce next subscriptions:
     - 
+    ![image](https://user-images.githubusercontent.com/85521093/227489695-a82cbc34-cb5f-46c5-bee4-53bd2b1a620c.png)
+
+    - Go to "App Home" and just switch on everything as shown here:
+    
+    ![image](https://user-images.githubusercontent.com/85521093/227490016-f655444a-8648-432c-ba6c-d195a1670a7e.png) ![image](https://user-images.githubusercontent.com/85521093/227490122-4a6fc00e-9683-4760-9b32-d68c7db6ab39.png)
+
+
 
 
 
