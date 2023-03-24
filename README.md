@@ -17,7 +17,7 @@ Project consists of separate logical parts:
 - *tests* is test coverage for entire project
 
 # How to run the app?
-Before running the application you need to do a lot of underlying work, so you might want to skip run for now untill you set up all right. So go to https://github.com/COXIT-CO/upwork_bot/blob/issue_47/README.md#L34
+Before running the application you need to do a lot of underlying work, so you might want to skip run for now untill you set up all right. So go to https://github.com/COXIT-CO/upwork_bot/blob/issue_47/README.md#setup
 
 Execute following lines in your terminal:
 
