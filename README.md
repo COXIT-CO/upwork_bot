@@ -140,7 +140,3 @@ That's exactly what we need to be **REFRESH_TOKEN** credential. The **LOGIN_ANSW
 ![image](https://user-images.githubusercontent.com/85521093/227499162-c4b19d93-ef38-47d3-a50e-fd7481126cd5.png)
 
 Congrats, as for now we have set up all platforms and collected all 10 credentials needed for run. Now you can go back to [How to run the app?](https://github.com/COXIT-CO/upwork_bot/blob/issue_47/README.md#how-to-run-the-app) section and run the application
-
-
-
-Congrats!!! We finished with setuping our platrorms. As for now you have to posess 3 credentials 
