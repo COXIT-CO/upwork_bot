@@ -17,7 +17,7 @@ Project consists of separate logical parts:
 - *tests* is test coverage for entire project
 
 # How to run the app?
-Before running the application you need to do a lot of underlying work, so you might want to skip run for now untill you set up all right. So go to https://github.com/COXIT-CO/upwork_bot/blob/issue_47/README.md#setup
+Before running the application you need to do a lot of underlying work, so you might want to omit this section as for now and go forward to [Setup](https://github.com/COXIT-CO/upwork_bot/blob/issue_47/README.md#setup) one. As soon as you are done with it, go back here.
 
 Execute following lines in your terminal:
 
@@ -32,6 +32,43 @@ docker run -p 8000:8000 upwork_bot
 ```
 
 # Setup
+
+During platforms setup you will obtain a lot of credentials needed to build docker container. I will pay your attention on every credential you need to posess
+
+<h3>Notion</h3>
+
+First of all you have to have a populated notion table with 2 required fields: **Project Name** and **Link**. Other fields won't be considered. Here is how my table with linkedin jobs looks like:
+
+![image](https://user-images.githubusercontent.com/85521093/227469505-f94641cc-0262-429a-950c-c960990a1168.png)
+
+!!! Here in **Project Name** field you should paste a link on a company you want to track. It match pattern **https://www.linkedin.com/company/** + company name. E.g. **https://www.linkedin.com/company/returnbear/**. Any query parameters or additions must be removed
+
+and respectively Upwork:
+
+![image](https://user-images.githubusercontent.com/85521093/227469708-8e6dfb22-99e1-4979-a2cd-8faa1025d099.png)
+
+!!! Here in **Project Name** field you should paste a link on a job you are tracking and want to receive updates on every opened job the client of this one has posted. It match pattern **https://www.upwork.com/jobs/** + job key. E.g. **https://www.upwork.com/jobs/~01ae4de5c88f60bee4**. Any query parameters or additions must be removed.
+
+Now you need to obtain access token and connect it to this table:
+1. Go to (https://www.notion.so/my-integrations)[https://www.notion.so/my-integrations] and create new integration. Give it random name. It populate fields as shown below:
+
+![image](https://user-images.githubusercontent.com/85521093/227472099-0678a5a9-b6aa-49a5-ac00-ce63ccfeaa9f.png)
+
+**As a result you will have a secret we need for docker build stage**
+
+![image](https://user-images.githubusercontent.com/85521093/227472469-0ffa6f3e-baa4-4de3-b134-a21d27688514.png)
+
+Now got to your notion table and connect this integration:
+
+![image](https://user-images.githubusercontent.com/85521093/227473329-7f62a908-a80b-4b83-ba07-75be8165f5ea.png)
+
+Fine! We set up a notion. Moving forward
+
+<h3>Slack</h3>
+
+
+
+
 
 *!!! Worth mentioning that notion table scraping + slack message send is done with cron jobs*
 
