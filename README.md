@@ -3,15 +3,32 @@
 [![buddy pipeline](https://app.buddy.works/soleskevych/upwork-bot/pipelines/pipeline/338573/badge.svg?token=00f56263ddf955f429925817a0fc038c807db2c528fbf0704c14a05c05ceaa31 "buddy pipeline")](https://app.buddy.works/soleskevych/upwork-bot/pipelines/pipeline/338573)
 
 # What does this bot do?
-A bot is integration of Slack, Upwork and Notion platforms to automate new projects seeking. Once or more times a day notion table notes are iterated through to get project links. Having them requests to Upwork API are made to get full necessary info about job: title, other opened jobs by client and their titles. If new projects appeared comparing with previous such iteration, which is figured out by quering and comparing database entries, bot sends message in Slack through Slack bot
+A bot is integration of Slack, Notion, Upwork and Linkedin platforms to automate new projects seeking. Once or more times a day notion table notes are iterated through to get project links. Having them requests to Upwork API are made or LinkedIn companied scraping is done to get full necessary info about job and company jobs. If new projects appeared comparing with previous such iteration, which is figured out by quering and comparing database entries, bot sends message in Slack through Slack bot
 
 # Architecture notes
 Project consists of separate logical parts:
-- *app* - flask app itself composing all other parts. **Also it manages read/write transactions from/to SQLite database**
-- *slack* part responsible for integration with Slack platform. **In schema/models directory you will find two ORM classes matching tables in database**
-- *notion* part serves notion tables notes extraction namely extraction job links
+- *app* - the head part of application composing all other ones. Contains ```__main__.py``` script running flask server.
+- *cron_jobs* - folder with cron jobs scripts
+- *db_schema* - consists of models and controllers to store job in database (and interview invitations for Upwork)
+- *helpers* - scripts used by different parts of application 
+- *notion* - has script scraping notion table by provided url
+- *slack* - responsible for integration with Slack platform. **In schema/models directory you will find two ORM classes matching tables in database**
 - *upwork* part provides access to work with Upwork API
 - *tests* is test coverage for entire project
+
+# How to run the app?
+Before running the application you need to do a lot of underlying work, so you might want to skip run for now untill you set up all properly
+Execute following lines in your terminal:
+
+```git clone https://github.com/COXIT-CO/upwork_bot.git``` or ```git clone git@github.com:COXIT-CO/upwork_bot.git```
+```
+cd upwork_bot
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+docker build --build-arg CLIENT_ID='<your_client_id>' --build-arg CLIENT_SECRET='<your_client_secret>' --build-arg CLIENT_EMAIL='<your_client_email>' --build-arg CLIENT_PASSWORD='<your_client_password>' --build-arg REDIRECT_URI='<your_client_redirect_url>' --build-arg SLACK_BOT_TOKEN='<your_slack_bot_token>' --build-arg SLACK_SIGNING_SECRET='<your_slack_signing_secret>' --build-arg NOTION_TOKEN='<your_notion_token>' --build-arg REFRESH_TOKEN='<your_refresh_token>' --build-arg LOGIN_ANSWER='<your_login_answer>' -t upwork_bot .
+docker run -p 8000:8000 upwork_bot
+```
 
 *!!! Worth mentioning that notion table scraping + slack message send is done with cron jobs*
 
