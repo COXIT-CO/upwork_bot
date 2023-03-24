@@ -40,7 +40,6 @@ def subscribe_upwork(ack, body):
     channel_data = slack_channels_data.get(channel_id, {})
     channel_data["upwork_table_url"] = upwork_table_url
     slack_channels_data[channel_id] = channel_data
-    print(slack_channels_data)
 
     args = {
         "SLACK_CHANNELS_DATA": str(slack_channels_data),
@@ -130,7 +129,6 @@ def handle_upwork_job_openings(ack, body, payload, client):
         channel_jobs = ast.literal_eval(payload["value"])
     else:
         slack_channels_data = get_arg_value_from_file("SLACK_CHANNELS_DATA")
-        print(slack_channels_data)
         slack_channels_data = slack_channels_data[20:-1]
         slack_channels_data = ast.literal_eval(slack_channels_data)
 

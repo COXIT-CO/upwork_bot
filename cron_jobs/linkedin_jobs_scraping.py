@@ -80,6 +80,9 @@ def scrape_linkedin_without_authentication(driver: webdriver.Chrome, company_url
     jobs = []
     for elem in jobs_block:
         job_url = elem.find_element(By.XPATH, "./div/a").get_attribute("href")
+        job_url = (
+            "https://www.linkedin.com/jobs/view/" + job_url.split("?")[0].split("-")[-1]
+        )
         job_title = elem.find_element(By.XPATH, ".//h3").get_attribute("innerText")
         jobs.append({"job_url": job_url, "job_title": job_title})
     return jobs
@@ -179,9 +182,15 @@ def extract_company_jobs(driver: webdriver.Chrome):
 
         for li in job_li_elems:
             a_elem = li.find_element(By.TAG_NAME, "a")
+            job_url = linkedin.extract_job_title(a_elem.get_attribute("href"))
+            splitted_job_url = job_url.split("/")
+            for i, val in enumerate(splitted_job_url):
+                if val == "view":
+                    break
+            job_url = "https://www.linkedin.com/jobs/view/" + splitted_job_url[i + 1]
             jobs.append(
                 {
-                    "job_url": linkedin.extract_job_title(a_elem.get_attribute("href")),
+                    "job_url": job_url,
                     "job_title": a_elem.text,
                 }
             )
@@ -255,7 +264,6 @@ from selenium import webdriver
 from selenium_stealth import stealth
 
 options = webdriver.ChromeOptions()
-# options.add_argument("--headless")
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36"
 lat = round(random.uniform(-90, 90), 6)
 lng = round(random.uniform(-180, 180), 6)
