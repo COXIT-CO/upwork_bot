@@ -62,11 +62,20 @@ Now got to your notion table and connect this integration:
 
 ![image](https://user-images.githubusercontent.com/85521093/227473329-7f62a908-a80b-4b83-ba07-75be8165f5ea.png)
 
-Fine! We set up a notion. Moving forward
+Fine! We set up Notion. Moving forward
 
 <h3>Slack</h3>
 
+Establishing Slack to work is way much harder. But let's do it following instructions:
 
+1. First of all you might want to create slack app, so visit [link](https://api.slack.com/apps?new_app) and:
+Here you see a navigation bar, I will refer to its items as text enclosed in double qoutes
+
+![image](https://user-images.githubusercontent.com/85521093/227484615-07ebf8f9-4458-4d7c-9071-dc38be89b288.png)
+
+2. Once you've come with working app we need to set it right:
+    - 
+    - 
 
 
 
