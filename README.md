@@ -17,7 +17,8 @@ Project consists of separate logical parts:
 - *tests* is test coverage for entire project
 
 # How to run the app?
-Before running the application you need to do a lot of underlying work, so you might want to skip run for now untill you set up all properly
+Before running the application you need to do a lot of underlying work, so you might want to skip run for now untill you set up all right. So go to line#L34
+
 Execute following lines in your terminal:
 
 ```git clone https://github.com/COXIT-CO/upwork_bot.git``` or ```git clone git@github.com:COXIT-CO/upwork_bot.git```
@@ -29,6 +30,8 @@ pip install -r requirements.txt
 docker build --build-arg CLIENT_ID='<your_client_id>' --build-arg CLIENT_SECRET='<your_client_secret>' --build-arg CLIENT_EMAIL='<your_client_email>' --build-arg CLIENT_PASSWORD='<your_client_password>' --build-arg REDIRECT_URI='<your_client_redirect_url>' --build-arg SLACK_BOT_TOKEN='<your_slack_bot_token>' --build-arg SLACK_SIGNING_SECRET='<your_slack_signing_secret>' --build-arg NOTION_TOKEN='<your_notion_token>' --build-arg REFRESH_TOKEN='<your_refresh_token>' --build-arg LOGIN_ANSWER='<your_login_answer>' -t upwork_bot .
 docker run -p 8000:8000 upwork_bot
 ```
+
+# Setup
 
 *!!! Worth mentioning that notion table scraping + slack message send is done with cron jobs*
 
