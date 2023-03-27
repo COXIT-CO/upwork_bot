@@ -143,7 +143,7 @@ def handle_upwork_job_openings(ack, body, payload, client):
                 break
 
         channel_data = slack_channels_data[channel_id]
-        channel_jobs = channel_data["upwork_jobs"]
+        channel_jobs = ast.literal_eval(channel_data["upwork_jobs"])
 
     client.views_open(
         trigger_id=body["trigger_id"],
