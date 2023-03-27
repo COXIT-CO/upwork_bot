@@ -12,9 +12,9 @@ def get_desktop_client():
 
     config = upwork.Config(
         {
-            "client_id": "1c3cc82d1b899a9ee1e44681f1c43514",
-            "client_secret": "fe9bec427ad322bf",
-            "redirect_uri": "https://coxit.co/",
+            "client_id": "<your_client_id>",
+            "client_secret": "<your_client_secret>",
+            "redirect_uri": "<your_redirect_uri>",
         }
     )
 
