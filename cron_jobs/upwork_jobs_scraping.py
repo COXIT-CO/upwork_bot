@@ -65,7 +65,7 @@ for chan in channels:
     encountered_errors = []
     try:
         projects_data = scrape_notion_table(
-            slack_channels_data[chan]["upwork_table_url"]
+            slack_channels_data[chan]["upwork_table_url"], origin="upwork"
         )
     except KeyError:
         continue
