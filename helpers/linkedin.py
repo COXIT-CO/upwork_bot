@@ -22,18 +22,17 @@ def extract_job_title(full_job_url: str):
         return full_job_url.split("&")[0]
 
 
+def trim_company_url(url: str):
+    url_pieces = url.split("/")
+    company_name = url_pieces[url_pieces.index("company") + 1]
+    return "https://www.linkedin.com/company/" + company_name
+
+
 def is_company_url_valid(url: str):
     """given link to a linkedin company validate it and return the result of whether the link is correct or not"""
-    url = url[:-1] if url.endswith("/") else url
-    if "https://www.linkedin.com/company/" in url:
-        pattern = "https://www.linkedin.com/company/"
-    elif "http://www.linkedin.com/company" in url:
-        pattern = "http://www.linkedin.com/company/"
-    else:
-        return False
-    if "/" in url.replace(pattern, ""):
-        return False
-    return True
+    if len(url.split("https://www.linkedin.com/company/")) == 2 or len(url.split("http://www.linkedin.com/company/")) == 2:
+        return True
+    return False
 
 
 def paginate_jobs(companies_data):
