@@ -30,7 +30,7 @@ for line in lines:
 from helpers.db import find_new_job_openings, remove_unactive_jobs_from_db
 from helpers.slack import post_slack_message
 from helpers.file import delete_arg_from_file, write_arg_to_file
-from helpers.linkedin import paginate_jobs, scroll_page_down, is_company_url_valid
+from helpers.linkedin import paginate_jobs, scroll_page_down, is_company_url_valid, trim_company_url
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -311,6 +311,7 @@ for chan in channels:
                 f"{url} doesn't look like pattern http://www.linkedin.com/company/ + company name"
             )
             continue
+        url = trim_company_url(url)
         title = company_data["title"]
         for email, password in LINKEDIN_ACCOUNTS.items():
             company_jobs = scrape_linkedin_without_authentication(driver, url)
