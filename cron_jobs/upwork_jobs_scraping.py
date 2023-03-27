@@ -124,7 +124,7 @@ for chan in channels:
             ],
         }
         if len(str(jobs)) > 2000:
-            slack_channels_data[chan]["upwork_jobs"]
+            slack_channels_data[chan]["upwork_jobs"] = str(jobs)
         else:
             modal_window["elements"][0]["value"] = str(jobs)
         blocks.append(modal_window)
