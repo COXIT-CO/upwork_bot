@@ -301,7 +301,9 @@ for chan in channels:
     encountered_errors = []
     companies_data = []
 
-    projects_data = scrape_notion_table(slack_channels_data[chan]["linkedin_table_url"])
+    projects_data = scrape_notion_table(
+        slack_channels_data[chan]["linkedin_table_url"], origin="linkedin"
+    )
     for company_data in projects_data:
         url = company_data["url"]
         if not is_company_url_valid(url):
