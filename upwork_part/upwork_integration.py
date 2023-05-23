@@ -174,8 +174,10 @@ class Job:
         return job_id
 
     def extract_job_title(self, job_data):
-        """extract job title from passed job content-holding dict and create object property"""
-        return job_data["profile"]["op_title"]
+        """Extract job title from passed job content-holding dict and create object property"""
+        if "profile" in job_data:
+            return job_data["profile"].get("op_title", "")
+        return job_data.get("op_title", "")
 
     def extract_other_opened_jobs(self, job_data, upwork_client):
         """from passed job content-holding dict extract keys of other opened jobs and using upwork client make requests to get job content-holding dict and extract job title for each such job"""
