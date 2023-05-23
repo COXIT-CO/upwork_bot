@@ -1,0 +1,9 @@
+# Run cron job to search for new job openings every 6 hours
+0 */6 * * * root /usr/local/bin/python /app/cron_jobs/upwork_jobs_scraping.py
+# Run cron job to search for new interview invitations every 12 hours
+0 */12 * * * root /usr/local/bin/python /app/cron_jobs/upwork_interviews_scraping.py
+# Run cron job to search for new interview invitations every 12 hours
+0 */6 * * * root /usr/local/bin/python /app/cron_jobs/linkedin_jobs_scraping.py
+# Run cron job to update upwork tokens pair every 6 days
+0 0 */6 * * root /usr/local/bin/python /app/cron_jobs/refresh_upwork_token.py
+# Don't remove this line and empty line after it. It is required to run the cron jobs properly
